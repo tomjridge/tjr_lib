@@ -3,7 +3,7 @@ set -a # export all vars
 
 root=$(realpath $(dirname $BASH_SOURCE))/..
 
-PKGS="-package str,bos.setup,yojson,omd,p1" #,astring
+PKGS="-package str,bos.setup,omd" #,astring
 SYNTAX=""
 
 # 8~"pattern-matching is not exhaustive"; 
