@@ -1,0 +1,6 @@
+name="tjr_lib"
+description="Tom Ridge, various OCaml functions"
+version="2016-12-08"
+depends=""
+archive(byte)="tjr_lib.cma"
+archive(native)="tjr_lib.cmxa"
