@@ -165,5 +165,13 @@ let sanitize s =
     ls fn)
 
 
+  (* pread from ExtUnixAll *)
 
 end
+
+(* short names for open ---------------------------------------- *)
+
+module STR = X_string
+
+module LIST = X_list
+

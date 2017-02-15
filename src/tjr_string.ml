@@ -72,7 +72,7 @@ let replace_first ~sub ~rep b =
        b1^rep^b3))
 
 
-(* this replaces the first occurrence; error if no occurrence *)
+(* this replaces the last occurrence; error if no occurrence *)
 let replace_last ~sub ~rep b =
   indexes sub b |> 
   (fun xs -> split_at b (X_list.last xs)) |> 
@@ -128,14 +128,34 @@ let concat_strings ~sep xs = (
   | x::xs -> List.fold_left (fun a b -> a^sep^b) x xs)
 
 
+(* FIXME not on jsoo
+
 (* check whole string matches re; re uses Str syntax *)
 let matches ~re s = Str.(
     string_match (regexp("^"^re^"$")) s 0
   )
-
+*)
 
 let replace_list s subs = (
   let s = ref s in
   let _ = List.iter (fun (x,v) -> s:=replace_all x v !s) subs in
   !s
 )
+
+
+(* explode; convert to list of char *)
+let exp s = 
+  let s = ref s in
+  let r = ref [] in
+  let _ = 
+    while(!s <> "") do
+      r:=(String.get !s 0)::!r;
+      s:=String.sub !s 0 1
+    done
+  in
+  List.rev !r
+
+(* implode; convert list of char to string *)
+let imp s = 
+  let s = Bytes.init (List.length s) (List.nth s) in
+  Bytes.unsafe_to_string s

@@ -18,6 +18,7 @@ ocamldep="ocamlfind ocamldep $PKGS"
 mk_cma="$DISABLE_BYTE ocamlfind ocamlc"
 mk_cmxa="$DISABLE_NTVE ocamlfind ocamlopt"
 
+mls="tjr_list.ml tjr_string.ml tjr_prelude.ml tjr_gensym.ml tjr_either.ml tjr_steppable.ml"
 
 natives="
 "
