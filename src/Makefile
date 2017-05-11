@@ -11,7 +11,7 @@ all: FORCE
 
 install:
 	-ocamlfind remove tjr_lib
-	ocamlfind install tjr_lib META *.cmi *.cmo *.cmx *.o *.cma *.cmxa
+	ocamlfind install tjr_lib META *.cmi *.o *.cma *.cmxa  #*.cmo *.cmx 
 
 uninstall:
 	ocamlfind remove tjr_lib
