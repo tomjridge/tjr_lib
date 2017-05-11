@@ -5,6 +5,7 @@ export BASH_ENV
 all: FORCE
 	$$ocamlc -c $$mls
 	$$ocamlopt -c $$mls
+	@echo "NOTE cma contains: $$cmos" # simple check
 	$$mk_cma -g -a -o tjr_lib.cma $$cmos
 	$$mk_cmxa -g -a -o tjr_lib.cmxa $$cmxs
 	$(MAKE) install
