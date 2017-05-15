@@ -11,8 +11,9 @@ all: FORCE
 #	$(MAKE) install
 
 install:
-	-ocamlfind remove tjr_lib
-	ocamlfind install tjr_lib META *.cmi *.o *.a *.cma *.cmxa  #*.cmo *.cmx 
+	-ocamlfind remove $$libn
+	mk_meta
+	ocamlfind install $$libn META *.cmi *.o *.a *.cma *.cmxa  #*.cmo *.cmx 
 
 gb:=$(shell git symbolic-ref --short HEAD) # branch
 dd1:=/tmp/l/ocamlfind_local/$(gb)

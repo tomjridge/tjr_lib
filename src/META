@@ -1,6 +1,6 @@
-name="tjr_lib"
+name="tjr_lib_master"
 description="Tom Ridge, various OCaml functions"
-version="2016-12-08"
+version="2017-05-15"
 requires="str bos.setup omd"
 archive(byte)="tjr_lib.cma"
 archive(native)="tjr_lib.cmxa"

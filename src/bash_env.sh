@@ -24,3 +24,19 @@ cmxs="${mls//.ml/.cmx}"
 
 natives="
 "
+
+libn1="tjr_lib"
+branch=`git symbolic-ref --short HEAD` 
+v=`date +'%F'`
+libn="${libn1}_${branch}"
+function mk_meta() {
+cat >META <<EOF
+name="$libn"
+description="Tom Ridge, various OCaml functions"
+version="$v"
+requires="str bos.setup omd"
+archive(byte)="tjr_lib.cma"
+archive(native)="tjr_lib.cmxa"
+EOF
+
+}
