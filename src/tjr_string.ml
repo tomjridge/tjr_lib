@@ -2,9 +2,8 @@
 
 include String
 
-module X_list = struct 
-  let last xs = List.hd (List.rev xs)
-end
+(* to make self_contained *)
+let list_last xs = List.hd (List.rev xs)
 
 module Span = struct
 
@@ -75,7 +74,7 @@ let replace_first ~sub ~rep b =
 (* this replaces the last occurrence; error if no occurrence *)
 let replace_last ~sub ~rep b =
   indexes sub b |> 
-  (fun xs -> split_at b (X_list.last xs)) |> 
+  (fun xs -> split_at b (list_last xs)) |> 
   (fun (b1,b2) -> (
        let (_,b3) = split_at b2 (String.length sub) in
        b1^rep^b3))
@@ -103,7 +102,7 @@ let split_on_first ~sub b = (
 let split_on_last ~sub b = (
   indexes sub b |> 
   (fun is_ -> 
-     let (b1,b2) = split_at b (X_list.last is_) in
+     let (b1,b2) = split_at b (list_last is_) in
      (b1,drop (String.length sub) b2)))
 
 

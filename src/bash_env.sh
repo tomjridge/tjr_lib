@@ -3,7 +3,7 @@ set -a # export all vars
 
 root=$(realpath $(dirname $BASH_SOURCE))/..
 
-PKGS="-package str,bos.setup,omd" #,astring
+PKGS="-package str,bos.setup,omd,fileutils" #,astring
 SYNTAX=""
 
 # 8~"pattern-matching is not exhaustive"; 
@@ -28,13 +28,17 @@ natives="
 libn1="tjr_lib"
 branch=`git symbolic-ref --short HEAD` 
 v=`date +'%F'`
-libn="${libn1}_${branch}"
+if [ "$branch" = "master" ]; then
+    libn="${libn1}"
+else 
+    libn="${libn1}_${branch}"
+fi
 function mk_meta() {
 cat >META <<EOF
 name="$libn"
 description="Tom Ridge, various OCaml functions"
 version="$v"
-requires="str bos.setup omd"
+requires="str bos.setup omd fileutils"
 archive(byte)="tjr_lib.cma"
 archive(native)="tjr_lib.cmxa"
 EOF
