@@ -114,3 +114,4 @@ let no_perm = {user=no_perm; group=no_perm; other=no_perm }
 
 let default_create_perm = {no_perm with user=rw} |> int_of_permission
                             
+(* let default_perm = 0o640 *)
