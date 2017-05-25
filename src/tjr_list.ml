@@ -19,3 +19,9 @@ let assoc_inv : 'a -> ('b * 'a) list -> 'b =
   List.assoc x
 
 
+let rec from_to l h = if l>h then [] else l :: from_to (l+1) h
+
+
+let rec take n xs = if n = 0 then [] else List.hd xs :: take (n-1) (List.tl xs)
+
+let rec drop n xs = if n = 0 then xs else drop (n-1) (List.tl xs)
