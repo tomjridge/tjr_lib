@@ -5,6 +5,8 @@ open Tjr_list
 open Tjr_string
 open Bos.OS
 
+let cd = Unix.chdir
+
 let read_file s = Bos.OS.File.read (Fpath.v s) |> get_ok
 
 let write_string_to_file s f = Bos.OS.File.write (Fpath.v f) s |> get_ok
@@ -34,10 +36,14 @@ let sanitize s =
     |> (global_replace (regexp {|[^A-Za-z0-9._-]|}) "_"))
 
 
-(* return contents; if rel, then no leading path in result *)
-let readdir ~rel fn = (
-  Dir.contents ~dotfiles:true ~rel:rel Fpath.(v fn) |> get_ok |>
-  List.map Fpath.to_string |> List.sort Pervasives.compare
+let readdir ?dir:(dir=".") () = (
+  dir |> Unix.opendir |> fun dh ->
+  let es = ref [] in
+  (try
+     while (true) do (es:=(Unix.readdir dh)::!es) done
+   with End_of_file -> ());
+  Unix.closedir dh;
+  List.rev !es
 )
 
 let rename f g = Unix.rename f g
@@ -70,6 +76,44 @@ let can_follow : fn -> bool = Unix.(
 
 let exists fn = stat fn <> None
 
+let dirname s = (split_on_last sep s)|>snd
+
+let cwd () = Unix.getcwd
+
+(* pread from ExtUnixAll *)
+
+
+
+(* permissions ------------------------------------------------------ *)
+
+(* http://ocaml-fileutils.forge.ocamlcore.org/api-fileutils/FileUtil.html *)
+module Perm = FileUtil
+
+module X_ = struct
+
+open Perm
+
+let no_perm = {sticky=false; exec=false; write=false; read=false }  
+let rw = {no_perm with write=true; read=true }
+
+let no_perm = {user=no_perm; group=no_perm; other=no_perm }
+
+let default_create_perm = {no_perm with user=rw} |> int_of_permission
+                            
+(* let default_perm = 0o640 *)
+end
+
+include X_
+
+module Deprecated = struct
+
+(* return contents; if rel, then no leading path in result *)
+let readdir ~rel fn = (
+  Dir.contents ~dotfiles:true ~rel:rel Fpath.(v fn) |> get_ok |>
+  List.map Fpath.to_string |> List.sort Pervasives.compare
+)
+
+
 (* return all basenames? or paths which extend the given path FIXME
    really a completion thing *)
 let ls : fn -> fn list = Tjr_list.(
@@ -81,7 +125,6 @@ let ls : fn -> fn list = Tjr_list.(
           readdir false (path^sep) |> inc (fun x -> starts base x))
   )
 
-let dirname s = (split_on_last sep s)|>snd
 
 let complete fn = (
   (* if fn has a single extension then try to extend that *)
@@ -96,22 +139,4 @@ let complete fn = (
   ls fn)
 
 
-(* pread from ExtUnixAll *)
-
-
-
-(* permissions ------------------------------------------------------ *)
-
-(* http://ocaml-fileutils.forge.ocamlcore.org/api-fileutils/FileUtil.html *)
-module Perm = FileUtil
-
-open Perm
-
-let no_perm = {sticky=false; exec=false; write=false; read=false }  
-let rw = {no_perm with write=true; read=true }
-
-let no_perm = {user=no_perm; group=no_perm; other=no_perm }
-
-let default_create_perm = {no_perm with user=rw} |> int_of_permission
-                            
-(* let default_perm = 0o640 *)
+end
