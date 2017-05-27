@@ -35,7 +35,11 @@ open Tjr_string
 
 let cur = ref []
 
-let set_cur xs = cur:=xs; ignore(!cur|>List.map print_endline); ()
+let set_cur xs = 
+  cur:=xs; 
+  ignore(!cur|>List.map print_endline); 
+  Printf.printf "NOTE %d entries" (List.length !cur); 
+  ()
 
 let get_cur () = !cur
 
@@ -48,7 +52,9 @@ let map f = get_cur()|>List.map f|>set_cur
 let readdir () = readdir () |> set_cur
 
 (* TODO add a find equivalent; also set-like operations using string
-   list; also save_cur, for caling functions... and save_cwd etc *)
+   list; also save_cur, for caling functions... and save_cwd etc; also
+   add a "save/restore cwd/cur" function, so we can jump back to some
+   previous state *)
 
 (*
 
