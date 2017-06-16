@@ -1,5 +1,0 @@
-FLG -w @f@p@u@s@40-8-11-26
-
-S .
-B _build
-PKG bos.setup yojson omd p1 batteries fileutils ppx_string_interpolate

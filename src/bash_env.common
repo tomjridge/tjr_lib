@@ -8,8 +8,9 @@ SYNTAX=""
 # 26~"unused variable s2"
 WARN="-w @f@p@u@s@40-8-11-26"
 
-  ocamlc="$DISABLE_BYTE ocamlfind ocamlc   $WARN $PKGS $SYNTAX"
-ocamlopt="$DISABLE_NTVE ocamlfind ocamlopt $WARN $PKGS $SYNTAX"
+# -thread needed for core
+  ocamlc="$DISABLE_BYTE ocamlfind ocamlc   -thread $WARN $PKGS $SYNTAX"
+ocamlopt="$DISABLE_NTVE ocamlfind ocamlopt -thread $WARN $PKGS $SYNTAX"
 ocamldep="ocamlfind ocamldep $PKGS"
 
 mk_cma="$DISABLE_BYTE ocamlfind ocamlc"

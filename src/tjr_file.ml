@@ -9,7 +9,7 @@ let cd = Unix.chdir
 
 let read_file s = Bos.OS.File.read (Fpath.v s) |> get_ok
 
-let write_string_to_file s f = Bos.OS.File.write (Fpath.v f) s |> get_ok
+let write_string_to_file ~fn s = Bos.OS.File.write (Fpath.v fn) s |> get_ok
 
 
 

@@ -135,7 +135,7 @@ let matches ~re s = Str.(
   )
 *)
 
-let replace_list s subs = (
+let replace_list ~subs s = (
   let s = ref s in
   let _ = List.iter (fun (x,v) -> s:=replace_all x v !s) subs in
   !s
@@ -143,18 +143,18 @@ let replace_list s subs = (
 
 
 (* explode; convert to list of char *)
-let exp s = 
+let explode s = 
   let s = ref s in
   let r = ref [] in
   let _ = 
     while(!s <> "") do
       r:=(String.get !s 0)::!r;
-      s:=String.sub !s 0 1
+      s:=String.sub !s 1 (String.length !s - 1)
     done
   in
   List.rev !r
 
 (* implode; convert list of char to string *)
-let imp s = 
+let implode s = 
   let s = Bytes.init (List.length s) (List.nth s) in
   Bytes.unsafe_to_string s
