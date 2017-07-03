@@ -52,4 +52,24 @@ let interleave xs ys = (
 
 let split_at i xs = (take i xs, drop i xs)
 
+(* convert assoc list to map; assumes assoc list is sorted *)
+let rec assoc_list_to_bst kvs = 
+  match kvs with
+  | [] -> fun k -> None
+  | [(k,v)] -> fun k' -> if k=k' then Some v else None
+  | _ -> 
+     List.length kvs 
+     |> fun n -> 
+        kvs |> split_at (n/2) 
+        |> fun (xs,(k,v)::ys) -> 
+           let f1 = assoc_list_to_bst xs in
+           let f2 = assoc_list_to_bst ((k,v)::ys) in
+           fun k' -> if k' < k then f1 k' else f2 k'
+   
+                     
+(*
 
+let _ = from_to 1 10 |> List.map (fun x -> (x,2*x)) |> assoc_list_to_bst
+        |> fun f -> f 2
+
+ *)
