@@ -65,7 +65,7 @@ let rec assoc_list_to_bst kvs =
            let f1 = assoc_list_to_bst xs in
            let f2 = assoc_list_to_bst ((k,v)::ys) in
            fun k' -> if k' < k then f1 k' else f2 k'
-   
+                   
                      
 (*
 
