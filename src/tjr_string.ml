@@ -50,11 +50,14 @@ let indexes ~(sub:string) b = Span.(
 
 let starts ~prefix b = indexes prefix b |>List.mem 0
 
+let starts_with = starts
+
 
 let ends ~suffix b = 
   indexes suffix b |> 
   List.mem (String.length b - String.length suffix)
 
+let ends_with = ends
 
 let contains ~sub b = indexes sub b <> []
 
