@@ -73,3 +73,12 @@ let _ = from_to 1 10 |> List.map (fun x -> (x,2*x)) |> assoc_list_to_bst
         |> fun f -> f 2
 
  *)
+
+
+let fold_left_ ~step ~init_state xs = 
+  List.fold_left 
+    (fun a b -> step ~state:a b)
+    init_state
+    xs
+
+let with_each_elt = fold_left_
