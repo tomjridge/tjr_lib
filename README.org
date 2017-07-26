@@ -1,0 +1,3 @@
+# `tjr_lib`, a simple OCaml utility library
+
+For dependencies, see file:src/bash_env.sh
