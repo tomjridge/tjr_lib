@@ -4,7 +4,7 @@
 
 (* we don't use this type directly *)
 type 'a poly_substring = {
-  input:'a;
+  s_:'a;
   i_:int;
   j_:int
 }
@@ -15,12 +15,15 @@ let length x = x.j_ - x.i_
 
 type substring_ = string poly_substring
 
-let mk_substring s = {input=s;i_=0;j_=String.length s}
+let mk_substring s = {s_=s;i_=0;j_=String.length s}
 
+module String_position = struct
 type string_position = {
   s_:string;
   i_:int
 }
+end
+open String_position
 
 (* returns the end indexes *)
 type terminal_parser = string_position -> int list

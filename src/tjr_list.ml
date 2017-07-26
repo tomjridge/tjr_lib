@@ -82,3 +82,13 @@ let fold_left_ ~step ~init_state xs =
     xs
 
 let with_each_elt = fold_left_
+
+
+
+module List_as_set = struct
+
+let subset xs ys = List.for_all (fun x -> List.mem x ys) xs
+
+let equal xs ys = subset xs ys && subset ys xs
+
+end
