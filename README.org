@@ -1,3 +1,12 @@
 # `tjr_lib`, a simple OCaml utility library
 
-For dependencies, see file:src/bash_env.sh
+Very simple modules for debugging, files, lists, strings and
+substrings, trees etc.
+
+## Building
+
+For opam required packages, see file:src/bash_env.sh
+
+## Status 
+
+2017-07-26 nix/travis build not working
