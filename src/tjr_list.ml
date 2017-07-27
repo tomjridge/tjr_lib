@@ -92,3 +92,10 @@ let subset xs ys = List.for_all (fun x -> List.mem x ys) xs
 let equal xs ys = subset xs ys && subset ys xs
 
 end
+
+let unique xs = 
+  xs 
+  |> with_each_elt 
+    ~step:(fun ~state x -> if List.mem x state then state else x::state)
+    ~init_state:[]
+
