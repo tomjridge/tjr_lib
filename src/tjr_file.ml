@@ -119,10 +119,10 @@ let readdir ~rel fn = (
 let ls : fn -> fn list = Tjr_list.(
     fun fn -> 
       match (contains ~sub:sep fn) with
-      | false -> (readdir true "." |> inc (fun x -> starts fn x))
+      | false -> (readdir true "." |> inc (fun x -> starts_with ~prefix:fn x))
       | true -> (
           let (path,base) = split_on_last sep fn in
-          readdir false (path^sep) |> inc (fun x -> starts base x))
+          readdir false (path^sep) |> inc (fun x -> starts_with ~prefix:base x))
   )
 
 
