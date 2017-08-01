@@ -44,7 +44,7 @@ let upto_re ~re s =
 
 let a lit s = re ~re:Str.(quote lit |> regexp) s
 
-let upto_a lit s = upto_re ~re:Str.(quote lit |> regexp) s
+let upto_a lit = upto_re ~re:Str.(quote lit |> regexp)
 
 (* sequencing *)
 let ( **> ) p1 p2 = 

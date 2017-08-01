@@ -50,8 +50,23 @@ let indexes ~(sub:string) b = Span.(
 
 let starts ~prefix b = indexes prefix b |>List.mem 0
 
+(* more efficient version *)
+
+let starts ~prefix b =
+  let i = String.length prefix in
+  i > String.length b |> function 
+  | true -> false
+  | false -> 
+    let rec f j = 
+      if j >= i then true else
+      prefix.[j] = b.[j] &&
+      f (j+1)
+    in
+    f 0
+
 let starts_with = starts
 
+    
 
 let ends ~suffix b = 
   indexes suffix b |> 
@@ -93,6 +108,12 @@ let replace_all ~sub ~rep b = (
 
 
 let drop n s = split_at s n|>snd
+
+(* more efficient version? *)
+let drop n s =
+  String.length s |> fun l ->
+  if n >= l then "" else
+    String.sub s n (l-n)
 
 
 let split_on_first ~sub b = (
