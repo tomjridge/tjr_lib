@@ -2,4 +2,4 @@ FLG -w @f@p@u@s@40-8-11-26
 
 S .
 B _build
-PKG bos.setup yojson omd p1 batteries fileutils ppx_string_interpolate core_kernel ppx_deriving_yojson ppx_sexp_conv
+PKG core bos.setup yojson omd p1 batteries fileutils ppx_string_interpolate core_kernel ppx_deriving_yojson ppx_sexp_conv
