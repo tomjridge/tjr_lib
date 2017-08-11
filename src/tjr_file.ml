@@ -7,9 +7,10 @@ open Bos.OS
 
 let cd = Unix.chdir
 
-let read_file s = Bos.OS.File.read (Fpath.v s) |> get_ok
+let read_file s = 
+  Bos.OS.File.read (Fpath.v s) |> function Ok s -> s | Error e -> failwith @@ __LOC__^": "^s
 
-let write_string_to_file ~fn s = Bos.OS.File.write (Fpath.v fn) s |> get_ok
+let write_string_to_file ~fn s = Bos.OS.File.write (Fpath.v fn) s |> function Ok s -> s | Error e -> failwith @@ __LOC__^": fn:"^fn^" s:"^s
 
 
 

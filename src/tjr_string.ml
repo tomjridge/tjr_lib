@@ -3,7 +3,9 @@
 include String
 
 (* to make self_contained *)
-let list_last xs = List.hd (List.rev xs)
+let list_last xs = 
+  assert (xs<>[]);
+  List.hd (List.rev xs)
 
 module Span = struct
 
