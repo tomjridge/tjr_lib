@@ -2,6 +2,13 @@
 
 open Yojson.Safe
 
+type diff = [
+    `Diff of Yojson.Safe.json 
+  | `Diff_assoc of diff list 
+  | `Diff_list of diff list 
+  | `Diff_tuple of diff list 
+  | `Same ] [@@deriving yojson]
+
 let is_prim (x:json) = match x with
   | `Bool _
   | `Float _
@@ -47,6 +54,8 @@ and diff_list xs =
 and diff_tuple xs = 
   xs |> List.map (fun (j1,j2) -> diff ~j1 ~j2) 
 
+
+let _ : j1:json -> j2:json -> diff = diff
 
 (* applying a diff -------------------------------------------------- *)
 
