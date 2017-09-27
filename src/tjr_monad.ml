@@ -46,7 +46,7 @@ module Alternative = struct
 
   let err e = Err e
 
-
+(*
   let example = 
     let read () = Prim (`Read ()) in
     let write (s:string) = Prim(`Write s) in
@@ -55,5 +55,6 @@ module Alternative = struct
     return ()
 
   let _ = example
+*)
 
 end
