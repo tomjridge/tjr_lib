@@ -14,10 +14,10 @@ type ('e,'t) set_ops = {
 
 (* reuse OCaml's sets *)
 module Make = functor (Ord : Set.OrderedType) -> struct
+  
+  module Set_ = Set.Make(Ord)
 
-  include Set.Make(Ord)
-
-  let set_ops = {
+  let set_ops = Set_.{
     empty=(fun () -> empty); is_empty; mem; add; remove; of_list; union
   }  
 
