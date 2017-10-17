@@ -68,14 +68,15 @@ module Make = functor (M:Tjr_monad.MONAD) -> struct
   type 'e extra_ops = {
     err: 'a. 'e -> 'a m;
     (* run whether error or result; any errors ignored *)
-    finalize: 'a. (unit -> unit m) -> 'a m -> 'a m;
-    finally: 'a. ('e -> 'a m) -> 'a m -> 'a m;
+    (* finalize: 'a. (unit -> unit m) -> 'a m -> 'a m; *)
+    (* finally: 'a. ('e -> 'a m) -> 'a m -> 'a m; *)
     (* run on error *)
-    catch: 'a. (unit -> unit m) -> 'a m -> 'a m;
+    (*catch: 'a. (unit -> unit m) -> 'a m -> 'a m;*)
+    catch: 'a. ('e -> 'a m) -> 'a m -> 'a m;
   }
 
 
-  let mk (type fd) ~monad_ops ~extra ~net_ops ~dest_net_ops =
+  let mk_net_msg (type fd) ~monad_ops ~extra ~net_ops ~dest_net_ops =
     let (return,bind) = (monad_ops.return,monad_ops.bind) in
     let ( >>= ) = bind in
     let err = extra.err in
@@ -92,13 +93,14 @@ module Make = functor (M:Tjr_monad.MONAD) -> struct
         bind srvr quad.local >>= fun () -> 
         listen srvr 5 >>= fun () ->
         accept srvr >>= fun (c,_) ->
-        if getpeername c <> quad.remote then 
+        getpeername c >>= fun pn -> 
+        if pn <> quad.remote then 
           (* connection doesn't match quad *)
           close_EBADF c >>= fun () -> return `Error_incorrect_peername
         else
           return @@ `Connection c
       end
-      |> extra.finally (function 
+      |> extra.catch (function 
           (* NOTE this is an error from the lower level *)
           | `Net_err e -> close_EBADF srvr >>= fun () -> return @@ `Net_err e)
     in
@@ -117,7 +119,7 @@ module Make = functor (M:Tjr_monad.MONAD) -> struct
         connect c quad.remote >>= fun () ->
         return @@ `Connection c
       end
-      |> extra.finally (function
+      |> extra.catch (function
           | `Net_err e -> close_EBADF c >>= fun () -> return @@ `Net_err e)
     in
 
@@ -181,53 +183,11 @@ module Make = functor (M:Tjr_monad.MONAD) -> struct
       return ss
     in
 
-    fun k -> k ~send_string send_strings ~recv_string ~recv_strings
+    fun k -> k ~send_string ~send_strings ~recv_string ~recv_strings
 
 
-  let _ = mk
+  let _ = mk_net_msg
 
 
 end
 
-
-(* unix instance ---------------------------------------------------- *)
-
-(* direct calls to OCaml's standard unix module, but with explicit error handling *)
-
-(*
-module Unix_ = struct
-
-  
-
-  type ('l,'e) state' = {
-    lower_layer_error: 'l option;
-    error: 'e option
-  }
-
-  (* not that we have a problem if the 'l and 'e are not fixed - have
-     to define monad after these are fixed *)
-
-
-  type state
-  type 'a m = state -> state * [ `Finished of 'a | `Rest of unit -> 'a m]
-
-
-
-  let err e = fun w -> { w with error=Some e}
-
-  type 'a m = 
-
-  let return_ : 'a. 'a -> ('a,'a*'m) Pub.m = fun x -> (x,failwith "")
-
-  let _ = return_
-
-  let monad_ops = {
-    Pub.return=return_;
-    bind=failwith "";
-    err=failwith ""
-  }
-
-  let monad_ops = 
-
-end
-*)

@@ -142,14 +142,28 @@ module Step_monad = struct
         f w |> fun (a,w') ->
         w',fun () -> g a)
 
+  let catch ~dest_exceptional (handle_:'e -> ('a,'w)m) =
+    let rec g (x:('a,'w)m) = 
+      match x with 
+      | Finished x -> Finished x
+      | Step f ->
+        Step(fun s ->
+          match dest_exceptional s with
+          | None -> 
+            f s |> fun (s',rest) ->
+            s',fun () -> g (rest()))
+    in
+    g
+  
 
 
   (* state passing with error *)
 
+(* FIXME this should not be with error? *)
   type ('e,'w,'m) monad_ops = {
     return: 'a. 'a -> ('a,'m)m;
     bind: 'a 'b. ('a,'m)m -> ('a -> ('b,'m)m) -> ('b,'m)m;
-    err: 'a. 'e -> ('a,'m)m;
+(*    err: 'a. 'e -> ('a,'m)m; *)
   }
 
 
