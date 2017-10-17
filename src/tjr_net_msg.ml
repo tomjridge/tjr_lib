@@ -1,6 +1,8 @@
 (* messaging over a connection *)
 
 
+(* aux -------------------------------------------------------------- *)
+
 
 (* int <-> byte_x4 conversion *)
 
@@ -44,118 +46,188 @@ let _ = assert (
   bs2i ~buf ~off:3 ~n:4 = i)
 
 
-open Unix
+
+(* messaging -------------------------------------------------------- *)
+
+open Unix (* for PF_NET SOCK_STREAM etc *)
 
 (* Lwt_unix has file_descr <> Unix.file_descr *)
 
-type 'a conn = File_descr of 'a
+(* type 'a conn = File_descr of 'a *)
 type ip = inet_addr
 type port = int
 type ipp = sockaddr (*  expect ADDR_INET ip * port *)
 type quad = { local:ipp; remote: ipp }
 
-open Tjr_monad.Private
 
-type extra_ops = {
-  (* run whether error or result; any errors ignored *)
-  finalize: 'a 'm 'n. (unit -> (unit,'n)m) -> ('a,'m)m -> ('a,'m)m;
-  (* run on error *)
-  catch: 'a 'm 'n. (unit -> (unit,'n)m) -> ('a,'m)m -> ('a,'m)m;
-}
+module Make = functor (M:Tjr_monad.MONAD) -> struct
 
-let mk (type fd) ~monad_ops ~net_ops ~dest_net_ops ~extra =
-  let (return,bind,err) = Tjr_monad.(monad_ops.return,monad_ops.bind,monad_ops.err) in
-  let ( >>= ) = bind in
+  module M_ = M
+  open M_
 
-  dest_net_ops net_ops @@ fun ~socket ~setsockopt ~bind ~listen ~accept ~getpeername ~close ~connect ~write ~read ->
+  type 'e extra_ops = {
+    err: 'a. 'e -> 'a m;
+    (* run whether error or result; any errors ignored *)
+    finalize: 'a. (unit -> unit m) -> 'a m -> 'a m;
+    finally: 'a. ('e -> 'a m) -> 'a m -> 'a m;
+    (* run on error *)
+    catch: 'a. (unit -> unit m) -> 'a m -> 'a m;
+  }
+
+
+  let mk (type fd) ~monad_ops ~extra ~net_ops ~dest_net_ops =
+    let (return,bind) = (monad_ops.return,monad_ops.bind) in
+    let ( >>= ) = bind in
+    let err = extra.err in
+
+    (* ASSUMES close_EBADF should ensure that we only return EBADF on error *)
+    dest_net_ops net_ops @@ fun ~socket ~setsockopt ~bind ~listen ~accept ~getpeername ~close_EBADF ~connect ~write ~read ->
+
+    (* accept connections for this quad only *)
+    let listen_accept ~quad = 
+      socket PF_INET SOCK_STREAM 0 >>= fun (srvr:fd) ->
+      begin
+        (* hack to speed up recovery *)
+        setsockopt srvr SO_REUSEADDR true >>= fun () ->
+        bind srvr quad.local >>= fun () -> 
+        listen srvr 5 >>= fun () ->
+        accept srvr >>= fun (c,_) ->
+        if getpeername c <> quad.remote then 
+          (* connection doesn't match quad *)
+          close_EBADF c >>= fun () -> return `Error_incorrect_peername
+        else
+          return @@ `Connection c
+      end
+      |> extra.finally (function 
+          (* NOTE this is an error from the lower level *)
+          | `Net_err e -> close_EBADF srvr >>= fun () -> return @@ `Net_err e)
+    in
+
+    let _ = listen_accept in  
+    (* FIXME would be nice to know which errors each function could
+       throw... include this in monad type? *)
+
+
+    let connect ~quad = 
+      socket PF_INET SOCK_STREAM 0 >>= fun (c:fd) ->
+      begin
+        (* hack to speed up recovery *)
+        setsockopt c SO_REUSEADDR true >>= fun () ->
+        bind c quad.local >>= fun () ->
+        connect c quad.remote >>= fun () ->
+        return @@ `Connection c
+      end
+      |> extra.finally (function
+          | `Net_err e -> close_EBADF c >>= fun () -> return @@ `Net_err e)
+    in
+
+
+    (* send, recv ------------------------------------------------------- *)
+
+    (* send length as 4 bytes, then the string itself; NOTE for
+       performance, it is quite important to try to call write with a
+       buffer which includes everything to do with the message *)
+    let send_string ~conn ~string_ =
+      return () >>= fun () ->
+      String.length string_ |> fun len ->
+      let buf = Bytes.create (4+len) in
+      i2bs ~buf ~off:0 ~i:len ~n:4;
+      Bytes.blit_string string_ 0 buf 4 len;
+      (* now write the buffer *)
+      write conn buf 0 (4+len) >>= fun nwritten ->
+      assert_(nwritten=4+len);  (* FIXME or loop? *)
+      return ()
+    in
+
+
+    (* send nstrings, followed by strings *)
+    let send_strings ~conn ~strings =
+      Marshal.to_string strings [] |> fun string_ ->
+      send_string ~conn ~string_
+    in
+
+    (* actually read len bytes *)
+    let rec read_n ~conn ~buf ~off ~len = 
+      return () >>= fun () ->
+      len |> function
+      | 0 -> return ()
+      | _ -> 
+        read conn buf off len >>= fun nread ->
+        read_n ~conn ~buf ~off:(off+nread) ~len:(len-nread)
+    in
+
+    let read_length ~conn : int m = 
+      return () >>= fun () ->
+      Bytes.create 4 |> fun buf ->
+      read_n ~conn ~buf ~off:0 ~len:4 >>= fun () ->
+      bs2i ~buf ~off:3 ~n:4 |> fun i ->
+      return i
+    in
+
+    let recv_string ~conn : string m = 
+      return () >>= fun () ->
+      read_length ~conn >>= fun len -> 
+      Bytes.create len |> fun buf ->          
+      read_n ~conn ~buf ~off:0 ~len >>= fun () ->
+      Bytes.unsafe_to_string buf |> return
+    in
+
+
+    (* FIXME marshal is a bit platform-specific? *)
+    let recv_strings ~conn : string list m = 
+      return () >>= fun () ->
+      recv_string ~conn >>= fun s ->
+      Marshal.from_string s 0 |> fun (ss:string list) ->
+      return ss
+    in
+
+    fun k -> k ~send_string send_strings ~recv_string ~recv_strings
+
+
+  let _ = mk
+
+
+end
+
+
+(* unix instance ---------------------------------------------------- *)
+
+(* direct calls to OCaml's standard unix module, but with explicit error handling *)
+
+(*
+module Unix_ = struct
+
   
-  (* accept connections for this quad only *)
-  let listen_accept ~quad = 
-    socket PF_INET SOCK_STREAM 0 >>= fun (srvr:fd) ->
-    extra.finalize (fun () -> close srvr) (
-      (* hack to speed up recovery *)
-      setsockopt srvr SO_REUSEADDR true >>= fun () ->
-      let addr = quad.local in
-      bind srvr addr >>= fun () ->
-      listen srvr 5 >>= fun () ->
-      accept srvr >>= fun (c,_) ->
-      if getpeername c <> quad.remote then 
-        (* connection doesn't match quad *)
-        close c >>= fun () -> err `Error_incorrect_peername
-      else
-        return c)
-  in
+
+  type ('l,'e) state' = {
+    lower_layer_error: 'l option;
+    error: 'e option
+  }
+
+  (* not that we have a problem if the 'l and 'e are not fixed - have
+     to define monad after these are fixed *)
 
 
-  let connect ~quad = 
-    socket PF_INET SOCK_STREAM 0 >>= fun (c:fd) ->
-    extra.catch (fun () -> close c) (
-      (* hack to speed up recovery *)
-      setsockopt c SO_REUSEADDR true >>= fun () ->
-      bind c quad.local >>= fun () ->
-      connect c quad.remote >>= fun () ->
-      return c)
-  in
+  type state
+  type 'a m = state -> state * [ `Finished of 'a | `Rest of unit -> 'a m]
 
 
-  (* send, recv ------------------------------------------------------- *)
 
-  (* send length as 4 bytes, then the string itself; NOTE for
-     performance, it is quite important to try to call write with a
-     buffer which includes everything to do with the message *)
-  let send_string ~conn ~string_ =
-    return () >>= fun () ->
-    String.length string_ |> fun len ->
-    let buf = Bytes.create (4+len) in
-    i2bs ~buf ~off:0 ~i:len ~n:4;
-    Bytes.blit_string string_ 0 buf 4 len;
-    (* now write the buffer *)
-    write conn buf 0 (4+len) >>= fun nwritten ->
-    assert_(nwritten=4+len);  (* FIXME or loop? *)
-    return ()
-  in
+  let err e = fun w -> { w with error=Some e}
 
+  type 'a m = 
 
-  (* send nstrings, followed by strings *)
-  let send_strings ~conn ~strings =
-    Marshal.to_string strings [] |> fun string_ ->
-    send_string ~conn ~string_
-  in
+  let return_ : 'a. 'a -> ('a,'a*'m) Pub.m = fun x -> (x,failwith "")
 
-  (* actually read len bytes *)
-  let rec read_n ~conn ~buf ~off ~len = 
-    return () >>= fun () ->
-    len |> function
-    | 0 -> return ()
-    | _ -> 
-      read conn buf off len >>= fun nread ->
-      read_n ~conn ~buf ~off:(off+nread) ~len:(len-nread)
-  in
+  let _ = return_
 
-  let read_length ~conn : (int,'m)m = 
-    return () >>= fun () ->
-    Bytes.create 4 |> fun buf ->
-    read_n ~conn ~buf ~off:0 ~len:4 >>= fun () ->
-    bs2i ~buf ~off:3 ~n:4 |> fun i ->
-    return i
-  in
+  let monad_ops = {
+    Pub.return=return_;
+    bind=failwith "";
+    err=failwith ""
+  }
 
-  let recv_string ~conn : (string,'m)m = 
-    return () >>= fun () ->
-    read_length ~conn >>= fun len -> 
-    Bytes.create len |> fun buf ->          
-    read_n ~conn ~buf ~off:0 ~len >>= fun () ->
-    Bytes.unsafe_to_string buf |> return
-  in
+  let monad_ops = 
 
-
-  (* FIXME marshal is a bit platform-specific? *)
-  let recv_strings ~conn : (string list,'m)m = 
-    return () >>= fun () ->
-    recv_string ~conn >>= fun s ->
-    Marshal.from_string s 0 |> fun (ss:string list) ->
-    return ss
-  in
-
-  ()
-
+end
+*)
