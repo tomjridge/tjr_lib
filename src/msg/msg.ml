@@ -143,7 +143,7 @@ module Make = functor (M:Tjr_monad.MONAD) -> struct
 
 
     (* send nstrings, followed by strings *)
-    let send_strings ~conn ~strings =
+    let send_strings ~conn ~(strings:string list) =
       Marshal.to_string strings [] |> fun string_ ->
       send_string ~conn ~string_
     in
@@ -183,7 +183,7 @@ module Make = functor (M:Tjr_monad.MONAD) -> struct
       return ss
     in
 
-    fun k -> k ~send_string ~send_strings ~recv_string ~recv_strings
+    fun k -> k ~listen_accept ~connect ~send_string ~send_strings ~recv_string ~recv_strings
 
 
   let _ = mk_net_msg

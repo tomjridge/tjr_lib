@@ -8,6 +8,7 @@ BASH_ENV:=bash_env.sh
 export BASH_ENV
 
 all: FORCE
+	mk_links
 	$$ocamlc -c $$mls
 	$$ocamlopt -c $$mls
 	@echo "NOTE cma contains: $$cmos" # simple check
@@ -25,6 +26,7 @@ uninstall:
 
 clean: 
 	rm -f *.cmi *.cmo *.cmx *.o *.x *.a *.cma *.cmxa
+	clean
 
 FORCE:
 
