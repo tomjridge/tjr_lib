@@ -11,12 +11,11 @@ end = struct
   type 'a m = 'a
   let return: 'a -> 'a m = fun x -> x
   let bind: 'a m -> ('a -> 'b m) -> 'b m = fun x f -> f x
-  let catch = failwith ""
+  let catch x = failwith ""
 end
 
-open Net_unix
-(*open M *) (* replace this with the particular monad required *)
-(* open M *)
+open M (* replace this with the particular monad required; see Makefile *)
+
 
 type 'file_descr net_ops = 
   [`Net_ops of

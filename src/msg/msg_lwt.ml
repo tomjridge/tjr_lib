@@ -15,7 +15,7 @@ end = struct
   let catch x = failwith ""
 end
 
-open Net_unix (* replace this with the particular monad required; see Makefile *)
+open Net_lwt (* replace this with the particular monad required; see Makefile *)
 
 
 type 'file_descr net_ops = 

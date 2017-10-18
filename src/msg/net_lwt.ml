@@ -4,18 +4,11 @@ open Lwt
 type 'a m = 'a t
 let return = Lwt.return
 let bind = Lwt.bind
+let catch f x = Lwt.catch (fun () -> x) f
 
-type wrap_ops = {
-  wrap: 'a.  (unit -> 'a m) -> 'a m
-}
-
-let wrap_ops = {
-  wrap=(fun f -> f ())
-}
+let wrap=(fun f -> f ())
 
 let mk_lwt_net_ops () = 
-  let wrap = wrap_ops.wrap in
-
   let open Lwt_unix in
   (* socket call doesn't throw error; use lwt for guidance as to which
      calls need to be in monad *)
@@ -44,24 +37,17 @@ let mk_lwt_net_ops () =
   `Net_ops(socket,setsockopt,bind,listen,accept,getpeername,close_EBADF,connect,write,read)
 
 (* ensure types match up *)
-let wf_net_ops ops = 
+let wf_lwt_net_ops ops = 
   (* this for typing *)
   let _ = fun () -> 
     mk_lwt_net_ops () = ops 
   in
   true
 
-let dest_net_ops ops = 
-  assert(wf_net_ops ops);
+let dest_lwt_net_ops ops = 
+  assert(wf_lwt_net_ops ops);
   ops |> function
     `Net_ops(socket,setsockopt,bind,listen,accept,getpeername,close_EBADF,connect,write,read) ->
     fun k ->
-      k ~socket ~setsockopt ~bind ~listen ~accept ~getpeername ~close_EBADF ~connect
-        ~write ~read
-
-let _ = dest_net_ops
-
-let _ = wf_net_ops
-
-
+      k ~socket ~setsockopt ~bind ~listen ~accept ~getpeername ~close_EBADF ~connect ~write ~read
 
