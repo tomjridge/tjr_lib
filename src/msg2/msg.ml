@@ -68,6 +68,7 @@ type file_descr = Unix.file_descr  (* for lwt, maintain a bijection *)
 
 module Ops = struct
 
+  (* FIXME may want calls such as socket, bind, listen, connect to return an explicit error; keep implciit monad error for read and write *)
   type 'a call =
     | Socket: Unix.socket_domain * Unix.socket_type * int -> file_descr call
     | Setsockopt: file_descr * Unix.socket_bool_option * bool -> unit call
