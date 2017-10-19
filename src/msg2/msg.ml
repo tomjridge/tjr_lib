@@ -66,8 +66,6 @@ end
 
 type file_descr = Unix.file_descr  (* for lwt, maintain a bijection *)
 
-type exn_
-
 module Ops = struct
 
   type 'a call =
@@ -87,7 +85,7 @@ module Ops = struct
     | Return of 'a 
     | Call of 'a call
     | MBind: 'a m * ('a -> 'b m) -> 'b m
-    | Catch: (exn_ -> 'a m)*'a m -> 'a m
+    | Catch: (exn -> 'a m)*'a m -> 'a m
 
 
   let call x = Call x
@@ -191,7 +189,7 @@ let mk_msg_lib (type fd) =
       read_n ~conn ~buf ~off:(off+nread) ~len:(len-nread)
   in
 
-  let read_length ~conn : int m = 
+  let read_length ~conn : int m =
     return () >>= fun () ->
     Bytes.create 4 |> fun buf ->
     read_n ~conn ~buf ~off:0 ~len:4 >>= fun () ->
@@ -199,7 +197,7 @@ let mk_msg_lib (type fd) =
     return i
   in
 
-  let recv_string ~conn : string m = 
+  let recv_string ~conn : string m =
     return () >>= fun () ->
     read_length ~conn >>= fun len -> 
     Bytes.create len |> fun buf ->          
@@ -243,15 +241,18 @@ include struct
     in
     f
 
-  let interp: 'a Ops.m -> ('a,exn) result = 
-    let interp_call c = try Ok (unix_interp c) with e -> Error e in
-    let rec interp = function
-      | Return x -> Ok x
-      | Call c -> interp_call c
-      | _ -> failwith __LOC__ (* FIXME wip *)
-    in
-    interp
-    
+  let interp_call c = try Ok (unix_interp c) with e -> Error e 
+
+  let rec interp: type a. a Ops.m -> (a,exn) result = function
+    | Return x -> Ok x
+    | Call c -> interp_call c
+    | MBind(a,b) -> (interp a |> function
+      | Ok a -> interp (b a)
+      | Error e -> Error e)
+    | Catch(f,a) -> 
+      interp a |> function
+      | Ok a -> Ok a
+      | Error e -> interp (f e)
     
 
 end
