@@ -16,8 +16,9 @@ end
 
 open M (* replace this with the particular monad required; see Makefile *)
 
+type file_descr
 
-type 'file_descr net_ops = 
+type net_ops = 
   [`Net_ops of
             (Unix.socket_domain -> Unix.socket_type -> int -> 'file_descr m) *
               ('file_descr -> Unix.socket_bool_option -> bool -> unit m) *

@@ -1,1 +1,7 @@
 src/*.x
+/src/msg_core.ml
+/src/msg_lwt.ml
+/src/msg_prelude.ml
+/src/msg_unix.ml
+/src/net_lwt.ml
+/src/net_unix.ml
