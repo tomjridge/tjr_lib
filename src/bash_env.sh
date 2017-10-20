@@ -8,10 +8,15 @@ description="Various useful OCaml functions"
 source bash_env.common
 
 function mk_links() {
-    for f in msg/*.ml; do ln -sf $f .; done
+    for f in msg2/*.ml; do ln -sf $f .; done
 }
 
 
 function clean() {
+	rm -f *.cmi *.cmo *.cmx *.o *.x *.a *.cma *.cmxa
 	find . -xtype l -exec rm -f \{\} \;
+}
+
+function real_clean() {
+	find . -maxdepth 1 -type l -exec rm -f \{\} \;
 }

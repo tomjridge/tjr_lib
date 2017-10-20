@@ -25,8 +25,10 @@ uninstall:
 	ocamlfind remove $$package_name
 
 clean: 
-	rm -f *.cmi *.cmo *.cmx *.o *.x *.a *.cma *.cmxa
 	clean
+
+real_clean:
+	real_clean
 
 FORCE:
 
