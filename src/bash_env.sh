@@ -8,7 +8,7 @@ description="Various useful OCaml functions"
 source bash_env.common
 
 function mk_links() {
-    for f in msg2/*.ml; do ln -sf $f .; done
+#    for f in msg2/*.ml; do ln -sf $f .; done
 }
 
 
