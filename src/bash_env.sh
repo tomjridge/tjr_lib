@@ -8,6 +8,7 @@ description="Various useful OCaml functions"
 source bash_env.common
 
 function mk_links() {
+true
 #    for f in msg2/*.ml; do ln -sf $f .; done
 }
 
