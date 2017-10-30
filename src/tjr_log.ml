@@ -8,8 +8,11 @@
    the the last n messages are printed.  *)
 
 type log_ops = {
-  log:string -> unit;
-  log_lazy: (unit -> string) -> unit;
+  log: string -> unit;
+
+  log_lazy: (unit -> string) -> unit;  
+  (* in case the string takes a log time to construct *)
+
   log_now: string -> unit;  (* print immediately, but also log *)
   log_n: int ref;
   jlog:Yojson.Safe.json -> unit;
