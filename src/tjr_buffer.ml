@@ -19,6 +19,15 @@ Operations to support:
 
 type bigarray = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
+let check_blit ~soff_ge_0 ~doff_ge_0 ~len_ge_0 ~soff_p_len_le_src_len
+    ~doff_p_len_le_dst_len = 
+  let b = 
+    soff_ge_0 && doff_ge_0 && len_ge_0 && 
+    soff_p_len_le_src_len && doff_p_len_le_dst_len 
+  in
+  if b then Ok () else Error ()
+
+
 type 'buf buf_ops = {
 
   create: int -> 'buf;
@@ -33,6 +42,8 @@ type 'buf buf_ops = {
   (* don't use bigarray blit operations - the buffer is mutable anyway
      - but we need to make sure the size is updated if needed *)
   (* NOTE use state passing style, so we can swap out easily *)
+  (* REQUIRES soff>=0; doff >= 0; len >= 0; soff+len <= src.length;
+     doff+len <=dst.len *)
   blit_bigarray_to_buf: 
     src:bigarray -> soff:int -> len:int -> dst:'buf -> doff:int -> 'buf;
 
@@ -110,17 +121,32 @@ let mk_buf_ops () =
   in
   let to_string buf = bigarray_to_string ~src:buf.ba ~off:0 ~len:buf.size_ in
   let blit_bigarray_to_buf ~src ~soff ~len ~dst ~doff = 
-    (* assume buf is large enough, or resize? assume *)
-    (if len' dst < doff + len then failwith __LOC__);
-    let ba = dst.ba in
-    blit_bigarray ~src ~soff ~len ~dst:ba ~doff;
-    {dst with ba}  (* ba is mutable, so not necessary *)
+    (* assume buf is large enough, or resize? assume but check *)
+    let (soff_ge_0,doff_ge_0,len_ge_0,soff_p_len_le_src_len,doff_p_len_le_dst_len) =
+      (soff>=0,doff>=0,len>=0,soff+len<=Biga.length src,doff+len<=len' dst)
+    in
+    check_blit ~soff_ge_0 ~doff_ge_0 ~len_ge_0 ~soff_p_len_le_src_len
+    ~doff_p_len_le_dst_len |> function
+    | Error () -> 
+      Printf.sprintf "tjr_buffer.131: %d %d %d %d %d"
+        soff doff len (Biga.length src) (len' dst) |> failwith
+    | Ok () ->
+      let ba = dst.ba in
+      blit_bigarray ~src ~soff ~len ~dst:ba ~doff;
+      {dst with ba}  (* ba is mutable, so not necessary *)
   in
   let blit_buf_to_bigarray ~src ~soff ~len ~dst ~doff = 
-    (if len' src < soff+len && len <> 0 then failwith __LOC__);
-    (if Biga.length dst < doff+len && len <> 0 then failwith __LOC__);
-    let ba = src.ba in
-    blit_bigarray ~src:ba ~soff ~len ~dst ~doff;
-    ()
+    let (soff_ge_0,doff_ge_0,len_ge_0,soff_p_len_le_src_len,doff_p_len_le_dst_len) =
+      (soff>=0,doff>=0,len>=0,soff+len<=len' src,doff+len<=Biga.length dst)
+    in
+    check_blit ~soff_ge_0 ~doff_ge_0 ~len_ge_0 ~soff_p_len_le_src_len
+    ~doff_p_len_le_dst_len |> function
+    | Error () -> 
+      Printf.sprintf "tjr_buffer.145: %d %d %d %d %d"
+        soff doff len (len' src) (Biga.length dst) |> failwith
+    | Ok () ->
+      let ba = src.ba in
+      blit_bigarray ~src:ba ~soff ~len ~dst ~doff;
+      ()
   in
   { create; len; resize; to_string; blit_bigarray_to_buf; blit_buf_to_bigarray }
