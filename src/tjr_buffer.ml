@@ -30,7 +30,7 @@ let check_blit ~soff_ge_0 ~doff_ge_0 ~len_ge_0 ~soff_p_len_le_src_len
 
 type 'buf buf_ops = {
 
-  create: int -> 'buf;
+  create: ?internal_len:int -> int -> 'buf;
 
   len: 'buf -> int;
 
@@ -87,23 +87,24 @@ let bigarray_to_string ~src ~off ~len =
     blit_bigarray_to_bytes ~src ~soff:off ~len ~dst ~doff:0;
     Bytes.unsafe_to_string dst
 
-let zero = Biga.create 0
-
-let ba0 = {ba=zero; size_=0}
-
 let mk_buf_ops () = 
-  let create len = 
-    if len = 0 then ba0 else
+  let ba0 = { ba=Biga.create 0; size_=0 } in
+
+  let create ?(internal_len=0) len = 
+    if len=0 && internal_len=0 then ba0 else
+      let internal_len = max len internal_len in
       {
-        ba=Biga.create len;
+        ba=Biga.create internal_len;
         size_=len 
-      } 
+      }
   in
-  let len' b = b.size_ in
-  let len = len' in
+
+  let buf_len b = b.size_ in
+
   let resize len buf = 
     let ba_len = Biga.length buf.ba in
     match () with
+    | _ when ba_len = 0 -> create len
     | _ when len = 0 -> ba0
     | _ when len < ba_len -> {buf with size_=len}
     | _ -> 
@@ -116,37 +117,40 @@ let mk_buf_ops () =
       let new_buf = Biga.create new_len in
       (* copy contents *)
       blit_bigarray 
-        ~src:buf.ba ~soff:0 ~len:buf.size_ ~dst:new_buf ~doff:0;
+        ~src:buf.ba ~soff:0 ~len:(buf_len buf) ~dst:new_buf ~doff:0;
       {ba=new_buf; size_=len}
   in
-  let to_string buf = bigarray_to_string ~src:buf.ba ~off:0 ~len:buf.size_ in
+
+  let to_string buf = bigarray_to_string ~src:buf.ba ~off:0 ~len:(buf_len buf) in
+
   let blit_bigarray_to_buf ~src ~soff ~len ~dst ~doff = 
     (* assume buf is large enough, or resize? assume but check *)
     let (soff_ge_0,doff_ge_0,len_ge_0,soff_p_len_le_src_len,doff_p_len_le_dst_len) =
-      (soff>=0,doff>=0,len>=0,soff+len<=Biga.length src,doff+len<=len' dst)
+      (soff>=0,doff>=0,len>=0,soff+len<=Biga.length src,doff+len<=(buf_len dst))
     in
     check_blit ~soff_ge_0 ~doff_ge_0 ~len_ge_0 ~soff_p_len_le_src_len
     ~doff_p_len_le_dst_len |> function
     | Error () -> 
       Printf.sprintf "tjr_buffer.131: %d %d %d %d %d"
-        soff doff len (Biga.length src) (len' dst) |> failwith
+        soff doff len (Biga.length src) (buf_len dst) |> failwith
     | Ok () ->
       let ba = dst.ba in
       blit_bigarray ~src ~soff ~len ~dst:ba ~doff;
       {dst with ba}  (* ba is mutable, so not necessary *)
   in
+
   let blit_buf_to_bigarray ~src ~soff ~len ~dst ~doff = 
     let (soff_ge_0,doff_ge_0,len_ge_0,soff_p_len_le_src_len,doff_p_len_le_dst_len) =
-      (soff>=0,doff>=0,len>=0,soff+len<=len' src,doff+len<=Biga.length dst)
+      (soff>=0,doff>=0,len>=0,soff+len<=(buf_len src),doff+len<=Biga.length dst)
     in
     check_blit ~soff_ge_0 ~doff_ge_0 ~len_ge_0 ~soff_p_len_le_src_len
     ~doff_p_len_le_dst_len |> function
     | Error () -> 
       Printf.sprintf "tjr_buffer.145: %d %d %d %d %d"
-        soff doff len (len' src) (Biga.length dst) |> failwith
+        soff doff len (buf_len src) (Biga.length dst) |> failwith
     | Ok () ->
       let ba = src.ba in
       blit_bigarray ~src:ba ~soff ~len ~dst ~doff;
       ()
   in
-  { create; len; resize; to_string; blit_bigarray_to_buf; blit_buf_to_bigarray }
+  { create; len=buf_len; resize; to_string; blit_bigarray_to_buf; blit_buf_to_bigarray }

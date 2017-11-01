@@ -23,3 +23,16 @@ module Make = functor (Ord:Map.OrderedType) -> struct
     map_bindings=bindings
   }
 end
+
+
+
+module Map_int = Map.Make(struct 
+    type t = int 
+    let compare (x:t) (y:t) = Pervasives.compare x y 
+  end)
+
+
+module Map_string = Map.Make(struct
+    type t = string
+    let compare (x:t) (y:t) = Pervasives.compare x y 
+  end)
