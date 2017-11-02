@@ -10,15 +10,9 @@ type ('a,'w)sm = ('a,'w)step_monad
 
 let dest_Step (Step f) = f
 
-type w  (* just to make typing easier *)
-
-type 'a m = ('a,w) step_monad
-
 let return a = Step(fun w -> (w,Inl a))
 
-let _ : 'a -> 'a m = return
-
-let rec bind : 'a 'b 'w. ('a,'w)sm -> ('a -> ('b,'w)sm) -> ('b,'w)sm = 
+let rec bind : ('a,'w)sm -> ('a -> ('b,'w)sm) -> ('b,'w)sm = 
   fun a b ->
     Step(fun w ->
       dest_Step a |> fun a ->
@@ -48,9 +42,9 @@ let run ~dest_exceptional w a =
     | Some _ -> Error (`Attempt_to_step_exceptional_state w)
     | None -> 
       dest_Step a |> fun a ->
-      a w |> fun (w',rest) -> 
+      a w |> fun (w,rest) -> 
       match rest with 
-      | Inl a -> Ok(w',a)
-      | Inr a -> run w' a
+      | Inl a -> Ok(w,a)
+      | Inr a -> run w a
   in
   run w a
