@@ -24,6 +24,18 @@ let rec bind : ('a,'w)sm -> ('a -> ('b,'w)sm) -> ('b,'w)sm =
 
 let _ = bind
 
+
+let rec fmap f a = 
+  a |> dest_Step |> fun a ->
+  Step(fun w -> 
+      a w |> fun (w,rest) ->
+      (w,
+       match rest with
+       |Inl a -> Inl (f a)
+       | Inr a -> Inr (fmap f a)))
+
+let _ = fmap
+
 (* FIXME why not just lift a? *)
 (*
 let with_state 
@@ -35,6 +47,11 @@ let with_state
 
 let with_state (type a b w) (a:w -> a*w) : (a,w)sm = 
   Step(fun w -> a w |> fun (a,w) -> (w,Inl a))
+
+(* NOTE to run, we assume that there is some predicate
+   dest_exceptional that indicates that we are not supposed to step
+   further; in concrete cases, we must always check this condition before
+   calling run *)
 
 let run ~dest_exceptional w a =
   let rec run w a = 
