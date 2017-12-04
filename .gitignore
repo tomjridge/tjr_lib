@@ -5,6 +5,7 @@ src/*.x
 /src/msg_unix.ml
 /src/net_lwt.ml
 /src/net_unix.ml
+/src/META
 *.a
 *.cma
 *.cmxa
