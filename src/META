@@ -1,6 +1,0 @@
-name="tjr_lib"
-description="Various useful OCaml functions"
-version="2017-11-30"
-requires="str,bos.setup,omd,fileutils,yojson,core_kernel,ppx_deriving_yojson,ppx_sexp_conv,core,lwt"
-archive(byte)="tjr_lib.cma"
-archive(native)="tjr_lib.cmxa"

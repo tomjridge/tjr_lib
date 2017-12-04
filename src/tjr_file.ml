@@ -13,6 +13,24 @@ let read_file s =
 let write_string_to_file ~fn s = Bos.OS.File.write (Fpath.v fn) s |> function Ok s -> s | Error e -> failwith @@ __LOC__^": fn:"^fn^" s:"^s
 
 
+(* https://stackoverflow.com/questions/5774934/how-do-i-read-in-lines-from-a-text-file-in-ocaml *)
+(* 
+let read_file_as_line_list filename =
+  let chan = open_in filename in
+  Std.input_list chan |> fun xs ->
+  close_in chan; xs
+*)
+let read_file_as_line_list filename = 
+  let lines = ref [] in
+  let chan = open_in filename in
+  try
+    while true; do
+      lines := input_line chan :: !lines
+    done; !lines
+  with End_of_file ->
+    close_in chan;
+    List.rev !lines ;;
+
 
 type fds_t = F | D | S | O (* f-or-d-or-symlink-or-other *)
 
