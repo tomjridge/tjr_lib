@@ -2,12 +2,11 @@ set -a # export all vars
 #set -x # debug
 
 libname="tjr_lib"
-required_packages="str,bos.setup,omd,fileutils,yojson,core_kernel,ppx_deriving_yojson,ppx_sexp_conv,core,lwt" #,astring ,ppx_string_interpolate
+required_packages="str,bos.setup,omd,fileutils,yojson,core_kernel,ppx_deriving_yojson,ppx_sexp_conv,lwt"
 description="Various useful OCaml functions"
 
 function mk_links() {
     for f in core/*.ml non_core/*.ml; do ln -sf $f .; done
-#    for f in msg2/*.ml; do ln -sf $f .; done
 }
 
 

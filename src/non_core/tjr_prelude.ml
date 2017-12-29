@@ -1,3 +1,5 @@
+(* FIXME this isn't doing much - maybe move contents to separate files *)
+
 
 (* to develop interactively, use: (merlin-use "bos.setup") in emacs interactively *)
 
