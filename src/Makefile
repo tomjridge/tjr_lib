@@ -7,6 +7,7 @@ SHELL:=/bin/bash
 BASH_ENV:=bash_env.sh
 export BASH_ENV
 
+
 all: FORCE
 	mk_links
 	$$ocamlc -c $$mls
@@ -16,30 +17,19 @@ all: FORCE
 	$$mk_cmxa -g -a -o $$libname.cmxa $$cmxs
 	$(MAKE) install
 
+
 install:
 	-ocamlfind remove $$package_name
 	mk_meta
 	ocamlfind install $$package_name META *.cmi *.o *.a *.cma *.cmxa *.cmo *.cmx 
 
+
 uninstall:
 	ocamlfind remove $$package_name
+
 
 clean: 
 	clean
 
-real_clean:
-	real_clean
 
 FORCE:
-
-
-
-
-# gb:=$(shell git symbolic-ref --short HEAD) # branch
-# dd1:=/tmp/l/ocamlfind_local/$(gb)
-# dd:=-destdir $(dd1)
-# local_install:
-# 	test -d $(dd1) || mkdir $(dd1)
-# 	-ocamlfind remove $(dd) $libname
-# 	ocamlfind install $(dd) $libname META *.cmi *.o *.cma *.cmxa  #*.cmo *.cmx 
-

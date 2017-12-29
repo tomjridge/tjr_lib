@@ -1,0 +1,2 @@
+core is for pure-ocaml stuff
+
