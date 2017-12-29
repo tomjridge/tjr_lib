@@ -1,4 +1,5 @@
 (* generic tree routines *)
+(* FIXME commenting to remove ppx_sexp_conv, which is messign up other ppxs 
 
 open Sexplib.Std
 
@@ -78,3 +79,4 @@ module Tree_from_text = struct
   let _f () = tree_to_yojson  (N("n1","hello",[L("l1","world"); L("l2","asdsa")]))
 
 end
+*)

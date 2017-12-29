@@ -2,7 +2,7 @@ set -a # export all vars
 #set -x # debug
 
 libname="tjr_lib"
-required_packages="str,bos.setup,omd,fileutils,yojson,core_kernel,ppx_deriving_yojson,ppx_sexp_conv,lwt"
+required_packages="rresult,bos,omd,fileutils,yojson,ppx_deriving_yojson,core_kernel" # ,ppx_sexp_conv
 description="Various useful OCaml functions"
 
 function mk_links() {

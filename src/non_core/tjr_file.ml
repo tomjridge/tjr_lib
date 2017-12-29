@@ -1,5 +1,7 @@
 (* very tiny file utilities *)
 
+(* FIXME reduce dependence on Bos? *)
+
 open Tjr_result
 open Tjr_list
 open Tjr_string
