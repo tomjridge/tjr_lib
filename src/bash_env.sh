@@ -1,8 +1,11 @@
 set -a # export all vars
 #set -x # debug
 
+
+# NOTE in toplevel you need to #require "bos.top" and bos.setup;;
+
 libname="tjr_lib"
-required_packages="rresult,bos,omd,fileutils,yojson,ppx_deriving_yojson,core_kernel" # ,ppx_sexp_conv
+required_packages="str,rresult,bos,omd,fileutils,yojson,ppx_deriving_yojson,core_kernel" # ,ppx_sexp_conv
 description="Various useful OCaml functions"
 
 function mk_links() {
