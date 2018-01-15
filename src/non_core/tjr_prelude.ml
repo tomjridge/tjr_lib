@@ -53,7 +53,7 @@ module Adoc = struct
 
   (* FIXME not concurrent safe; also awful *)
   let adoc_to_html: string -> string = (fun s ->
-      write_string_to_file s "/tmp/tmp.adoc";
+    write_string_to_file ~fn:"/tmp/tmp.adoc" s;
     Bos.OS.Cmd.run (Cmd.v "asciidoctor" % "-s" % "-o" % "/tmp/tmp.html" % "/tmp/tmp.adoc") |> get_ok;
     read_file "/tmp/tmp.html"
   )
