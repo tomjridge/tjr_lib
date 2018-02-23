@@ -99,3 +99,21 @@ let unique xs =
     ~step:(fun ~state x -> if List.mem x state then state else x::state)
     ~init_state:[]
 
+
+(* folding with assoc and comm. operation --------------------------- *)
+
+(* NOTE assumes xs not empty; add a neutral element to guarantee this *)
+let fold_assoc_comm ~op xs =
+  assert(xs<>[]);
+  with_each_elt
+    ~step:(fun ~state n -> op state n)
+    ~init_state:(List.hd xs)
+    (List.tl xs)
+
+
+(* int list --------------------------------------------------------- *)
+
+(* over |N not ZZ *)
+let max_list xs = 
+  fold_assoc_comm ~op:(max) (0::xs)
+
