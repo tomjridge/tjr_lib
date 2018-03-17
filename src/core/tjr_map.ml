@@ -33,15 +33,17 @@ module Make = functor (Ord:Map.OrderedType) -> struct
   }
 end
 
+module Int_ord = struct 
+  type t = int 
+  let compare (x:t) (y:t) = Pervasives.compare x y 
+end
+
+module Map_int = Map.Make(Int_ord)
 
 
-module Map_int = Map.Make(struct 
-    type t = int 
-    let compare (x:t) (y:t) = Pervasives.compare x y 
-  end)
+module String_ord = struct 
+  type t = string
+  let compare (x:t) (y:t) = Pervasives.compare x y 
+end
 
-
-module Map_string = Map.Make(struct
-    type t = string
-    let compare (x:t) (y:t) = Pervasives.compare x y 
-  end)
+module Map_string = Map.Make(String_ord)

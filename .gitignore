@@ -28,3 +28,4 @@ src/*.x
 /src/tjr_substring.ml
 /src/tjr_tree.ml
 /src/yojson_diff.ml
+/src/tjr_trace_check.ml
