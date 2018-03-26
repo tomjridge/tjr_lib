@@ -31,7 +31,10 @@ let mk_log_ops () =
   let jlog j = log (Yojson.Safe.to_string j) in
   let log_now s = log s; print_endline s in
   let print_last_n () = 
-    ignore (!xs |> Tjr_list.take (!log_n) |> List.iter (fun f -> print_endline (f())))
+    ignore (!xs |> fun xs ->
+            xs 
+            |> Tjr_list.take (min (List.length xs) !log_n)
+            |> List.iter (fun f -> print_endline (f())))
   in
   let with_log f x = try f x with e -> (
       e|>Printexc.to_string|>print_endline;

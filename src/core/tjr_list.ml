@@ -100,6 +100,19 @@ let unique xs =
     ~init_state:[]
 
 
+(* prefix, suffix etc ----------------------------------------------- *)
+
+let prefix ~prefix ys =
+  let n = List.length prefix in
+  List.length prefix <= List.length ys
+  && (take n ys = prefix)
+
+let suffix ~suffix xs =
+  let n = List.length suffix in
+  n <= List.length xs 
+  && drop (List.length xs - n) xs = suffix
+
+
 (* folding with assoc and comm. operation --------------------------- *)
 
 (* NOTE assumes xs not empty; add a neutral element to guarantee this *)
