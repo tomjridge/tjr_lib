@@ -31,5 +31,7 @@ uninstall:
 clean: 
 	clean
 
+doc:
+	mk_doc
 
 FORCE:

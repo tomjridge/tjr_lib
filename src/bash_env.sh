@@ -16,6 +16,16 @@ function mk_links() {
 function clean() {
 	rm -f *.cmi *.cmo *.cmx *.o *.x *.a *.cma *.cmxa
 	find . -maxdepth 1 -type l -exec rm -f \{\} \;
+  rm -f *.html *.css
+}
+
+mls=`ocamldep -sort -one-line *.ml`
+
+# doc ----------------------------------------------------
+
+function mk_doc() {
+    ocamlfind ocamldoc $PKGS $WARN -html $mls
+    # FIXME assume package built and installed
 }
 
 
@@ -40,7 +50,6 @@ ocamldep="ocamlfind ocamldep $PKGS"
 mk_cma="$DISABLE_BYTE ocamlfind ocamlc"
 mk_cmxa="$DISABLE_NTVE ocamlfind ocamlopt"
 
-mls=`ocamldep -sort -one-line *.ml`
 cmos="${mls//.ml/.cmo}"
 cmxs="${mls//.ml/.cmx}"
 
