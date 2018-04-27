@@ -30,3 +30,4 @@ src/*.x
 /src/yojson_diff.ml
 /src/tjr_trace_check.ml
 /src/tjr_binary_search.ml
+/src/tjr_store.ml
