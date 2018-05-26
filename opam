@@ -1,0 +1,28 @@
+opam-version: "1.2"
+name: "tjr_lib"
+
+# this should match the github tag and src/config.ml_/version
+version: "??"
+
+maintainer: "Tom Ridge <tom.j.ridge@googlemail.com>"
+authors: "Tom Ridge <tom.j.ridge@googlemail.com>"
+homepage: "https://github.com/tomjridge/tjr_lib"
+bug-reports: "https://github.com/tomjridge/tjr_lib/issues"
+dev-repo: "https://github.com/tomjridge/tjr_lib.git"
+
+build: [
+  [make "all"]
+]
+install: [make "install"]
+remove: ["ocamlfind" "remove" "tjr_lib"]
+
+# NOTE this should match bash_env.sh
+depends: [
+  "ocamlfind" {build}
+  "core_kernel"
+  "ppx_deriving_yojson"
+  "rresult"
+  "bos.setup"
+  "fileutils"
+  "omd"
+]
