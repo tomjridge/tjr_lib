@@ -5,12 +5,13 @@ set -a # export all vars
 # NOTE in toplevel you need to #require "bos.top" and bos.setup;;
 
 libname="tjr_lib"
-required_packages="str,core_kernel,ppx_deriving_yojson,rresult,bos.setup,fileutils,omd"
+required_packages="str,tjr_lib_core,bos,fileutils,omd"
 description="Various useful OCaml functions"
 
-function mk_links() {
-    for f in core/*.ml non_core/*.ml; do ln -sf $f .; done
-}
+
+# function mk_links() {
+#     for f in core/*.ml non_core/*.ml; do ln -sf $f .; done
+# }
 
 
 function clean() {

@@ -31,3 +31,5 @@ src/*.x
 /src/tjr_trace_check.ml
 /src/tjr_binary_search.ml
 /src/tjr_store.ml
+/src/core/META
+/src/non_core/META

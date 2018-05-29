@@ -1,37 +1,19 @@
-#
-# Generic makefile, srcs in current directory, not packed; config in
-# bash_env.sh
-#
+SUBDIRS:=core non_core
 
-SHELL:=/bin/bash
-BASH_ENV:=bash_env.sh
-export BASH_ENV
-
-
-all: FORCE
-	mk_links
-	$$ocamlc -c $$mls
-	$$ocamlopt -c $$mls
-	@echo "NOTE cma contains: $$cmos" # simple check
-	$$mk_cma -g -a -o $$libname.cma $$cmos
-	$$mk_cmxa -g -a -o $$libname.cmxa $$cmxs
-	$(MAKE) install
+all: 
+	for f in $(SUBDIRS); do $(MAKE) -C $$f $@; done
 
 
 install:
-	-ocamlfind remove $$package_name
-	mk_meta
-	ocamlfind install $$package_name META *.cmi *.o *.a *.cma *.cmxa *.cmo *.cmx 
+	for f in $(SUBDIRS); do $(MAKE) -C $$f $@; done
 
 
 uninstall:
-	ocamlfind remove $$package_name
+	for f in $(SUBDIRS); do $(MAKE) -C $$f $@; done
 
 
 clean: 
-	clean
+	for f in $(SUBDIRS); do $(MAKE) -C $$f $@; done
 
-doc:
-	mk_doc
 
 FORCE:
