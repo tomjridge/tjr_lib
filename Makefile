@@ -3,7 +3,7 @@ SHELL:=bash
 all:
 	$(MAKE) -C src
 
-install: all
+install: 
 	$(MAKE) -C src install
 
 uninstall: 
