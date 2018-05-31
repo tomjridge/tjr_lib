@@ -11,10 +11,16 @@ RUN opam update
 # the following consists of the large dependencies of tjr_lib; the
 # idea is to have a separate step to speed up rebuilds
 
-RUN opam install core_kernel
+# HOWEVER, this doesn't work because some other packages have
+# requirements on core_kernel which force a rebuild of a different
+# version :(  So instead we install all dependencies
+
+# RUN opam install core_kernel
+
+RUN opam install core_kernel ppx_deriving_yojson rresult bos fileutils omd
 
 RUN git clone https://github.com/tomjridge/tjr_lib.git
 
 # -n means don't build etc
 RUN eval `opam config env` && opam pin add -n tjr_lib ./tjr_lib
-RUN eval `opam config env` && opam install tjr_lib
+# RUN eval `opam config env` && opam install tjr_lib

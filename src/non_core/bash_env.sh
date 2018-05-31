@@ -7,6 +7,7 @@ set -a # export all vars
 libname="tjr_lib"
 required_packages="str,tjr_lib_core,bos,fileutils,omd"
 description="Various useful OCaml functions"
+source ../../VERSION
 
 
 # function mk_links() {
@@ -23,6 +24,7 @@ function clean() {
 
 mls=`ocamldep -sort -one-line *.ml`
 
+
 # doc ----------------------------------------------------
 
 function mk_doc() {
@@ -33,8 +35,6 @@ function mk_doc() {
 
 
 # generic from here ----------------------------------------------------
-
-# was in bash_env.common
 
 PKGS="-package $required_packages"
 SYNTAX=""
@@ -58,14 +58,7 @@ cmxs="${mls//.ml/.cmx}"
 natives="
 "
 
-branch=`git symbolic-ref --short HEAD` 
-v=`date +'%F'`
-if [ "$branch" = "master" ]; then
-    package_name="${libname}"
-else 
-    package_name="${libname}_${branch}"
-fi
-
+package_name="${libname}"
 
 function mk_meta() {
 cat >META <<EOF

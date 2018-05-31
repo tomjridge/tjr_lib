@@ -5,6 +5,7 @@ set -a # export all vars
 libname="tjr_lib_core"
 required_packages="str,core_kernel,ppx_deriving_yojson,rresult"
 description="Various useful OCaml functions"
+source ../../VERSION
 
 # function mk_links() {
 #     for f in core/*.ml non_core/*.ml; do ln -sf $f .; done
@@ -31,7 +32,7 @@ function mk_doc() {
 
 # generic from here ----------------------------------------------------
 
-# was in bash_env.common
+
 
 PKGS="-package $required_packages"
 SYNTAX=""
@@ -55,14 +56,8 @@ cmxs="${mls//.ml/.cmx}"
 natives="
 "
 
-branch=`git symbolic-ref --short HEAD` 
-v=`date +'%F'`
-if [ "$branch" = "master" ]; then
-    package_name="${libname}"
-else 
-    package_name="${libname}_${branch}"
-fi
-
+# don't mess about with package names
+package_name="${libname}"
 
 function mk_meta() {
 cat >META <<EOF
