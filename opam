@@ -4,6 +4,11 @@ name: "tjr_lib"
 # this should match the VERSION file
 version: "opam??"
 
+# FIXME at the moment we have two ocamlfind packages and one opam
+# package
+
+# FIXME opam doesn't like comments at end of file?
+
 maintainer: "Tom Ridge <tom.j.ridge@googlemail.com>"
 authors: "Tom Ridge <tom.j.ridge@googlemail.com>"
 homepage: "https://github.com/tomjridge/tjr_lib"
@@ -27,5 +32,3 @@ depends: [
 ]
 
 
-# FIXME at the moment we have two ocamlfind packages and one opam
-# package
