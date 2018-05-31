@@ -8,7 +8,13 @@ FROM ocaml/opam:ubuntu-16.04_ocaml-4.04.2
 RUN opam list
 RUN opam update
 
+# the following consists of the large dependencies of tjr_lib; the
+# idea is to have a separate step to speed up rebuilds
+
+RUN opam install core_kernel
+
 RUN git clone https://github.com/tomjridge/tjr_lib.git
 
-RUN eval `opam config env` && opam pin add tjr_lib ./tjr_lib
+# -n means don't build etc
+RUN eval `opam config env` && opam pin add -n tjr_lib ./tjr_lib
 RUN eval `opam config env` && opam install tjr_lib
