@@ -1,7 +1,7 @@
 opam-version: "1.2"
 name: "tjr_lib"
 
-# this should match the github tag and src/config.ml_/version
+# this should match the VERSION file
 version: "opam??"
 
 maintainer: "Tom Ridge <tom.j.ridge@googlemail.com>"
@@ -26,3 +26,6 @@ depends: [
   "omd"
 ]
 
+
+# FIXME at the moment we have two ocamlfind packages and one opam
+# package

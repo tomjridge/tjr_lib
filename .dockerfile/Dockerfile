@@ -19,8 +19,9 @@ RUN opam update
 
 RUN opam install core_kernel ppx_deriving_yojson rresult bos fileutils omd
 
+RUN echo force rebuild from here
 RUN git clone https://github.com/tomjridge/tjr_lib.git
 
 # -n means don't build etc
 RUN eval `opam config env` && opam pin add -n tjr_lib ./tjr_lib
-# RUN eval `opam config env` && opam install tjr_lib
+RUN eval `opam config env` && opam install tjr_lib
