@@ -52,7 +52,8 @@ let interleave xs ys = (
 
 let split_at i xs = (take i xs, drop i xs)
 
-(* convert assoc list to map; assumes assoc list is sorted *)
+(* convert assoc list to map using a binary search tree; assumes assoc
+   list is sorted *)
 let rec assoc_list_to_bst kvs = 
   match kvs with
   | [] -> fun k -> None
