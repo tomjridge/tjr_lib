@@ -82,7 +82,13 @@ let fold_left_ ~step ~init_state xs =
     init_state
     xs
 
-let with_each_elt = fold_left_
+let with_each_elt' = fold_left_
+
+let with_each_elt
+  ~list
+  ~step
+  ~init
+  = fold_left_ ~step ~init_state:init list
 
 
 
@@ -96,7 +102,7 @@ end
 
 let unique xs = 
   xs 
-  |> with_each_elt 
+  |> with_each_elt'
     ~step:(fun ~state x -> if List.mem x state then state else x::state)
     ~init_state:[]
 
@@ -119,7 +125,7 @@ let suffix ~suffix xs =
 (* NOTE assumes xs not empty; add a neutral element to guarantee this *)
 let fold_assoc_comm ~op xs =
   assert(xs<>[]);
-  with_each_elt
+  with_each_elt'
     ~step:(fun ~state n -> op state n)
     ~init_state:(List.hd xs)
     (List.tl xs)
