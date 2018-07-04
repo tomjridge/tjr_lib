@@ -46,11 +46,11 @@ let test ~set_ops ~test_ops =
               List.iter (fun s' -> test_ops.check_state s'; test_ops.check_step s op s') next_states;
               Tjr_list.with_each_elt
                 ~list:next_states
-                ~step:(fun ~state:ts s' ->
-                  match set_ops.mem s' ts.done_ with 
-                  | true -> ts
-                  | false -> set_ops.add s' ts.todo |> fun todo -> { ts with todo })
-                ~init:ts
+                ~step:(fun ~state s' ->
+                  match set_ops.mem s' state.done_ with 
+                  | true -> state
+                  | false -> set_ops.add s' state.todo |> fun todo -> { state with todo })
+                ~init:state
             end)
       in
       Some ts
@@ -96,9 +96,9 @@ let test_till_no_successor_states ~test_ops =
               List.iter (fun s' -> test_ops.check_state s'; test_ops.check_step s op s') next_states;
               Tjr_list.with_each_elt
                 ~list:next_states
-                ~step:(fun ~state:todo s' ->
-                  s'::todo)
-                ~init:todo
+                ~step:(fun ~state s' ->
+                  s'::state)
+                ~init:state
             end)
       in
       Some todo
