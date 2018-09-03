@@ -23,9 +23,7 @@ remove: ["ocamlfind" "remove" "tjr_lib"]
 
 depends: [
   "ocamlfind"
-  "core_kernel"
   "ppx_deriving_yojson"
-  "rresult"
   "bos"
   "fileutils"
   "omd"
