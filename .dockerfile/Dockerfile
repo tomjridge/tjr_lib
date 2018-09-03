@@ -2,26 +2,14 @@
 
 # FROM ocaml/opam:ubuntu - latest doesn't work due to problems with ppx_deriving deps
 # 17.04 doesn't work due to missing archives at ubuntu? or stale packages info?
-FROM ocaml/opam:ubuntu-16.04_ocaml-4.04.2
-# RUN apt-get -y update
+FROM tjr_ubuntu_16.04_with_ocaml
+# was ocaml/opam:ubuntu-16.04_ocaml-4.04.2
 
-RUN opam list
-RUN opam update
+RUN eval `opam config env` && opam install core_kernel ppx_sexp_conv ppx_deriving_yojson rresult bos fileutils omd
 
-# the following consists of the large dependencies of tjr_lib; the
-# idea is to have a separate step to speed up rebuilds
-
-# HOWEVER, this doesn't work because some other packages have
-# requirements on core_kernel which force a rebuild of a different
-# version :(  So instead we install all dependencies
-
-# RUN opam install core_kernel
-
-RUN opam install core_kernel ppx_deriving_yojson rresult bos fileutils omd
-
-RUN echo force rebuild from here
 RUN git clone https://github.com/tomjridge/tjr_lib.git
 
 # -n means don't build etc
 RUN eval `opam config env` && opam pin add -n tjr_lib ./tjr_lib
 RUN eval `opam config env` && opam install tjr_lib
+RUN eval `opam config env` && opam list
