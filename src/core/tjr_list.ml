@@ -26,13 +26,35 @@ let rec take n xs = if n = 0 then [] else List.hd xs :: take (n-1) (List.tl xs)
 
 let rec drop n xs = if n = 0 then xs else drop (n-1) (List.tl xs)
 
-let take_while = Core_kernel.List.take_while
-let drop_while = Core_kernel.List.drop_while
-let split_while = Core_kernel.List.split_while
+let split_while ~f xs = 
+  let rec loop acc xs =
+    match xs with 
+    | [] -> (List.rev acc, [])
+    | x::xs ->
+      match f x with
+      | true -> loop (x::acc) xs
+      | false -> (List.rev acc, xs)
+  in
+  loop [] xs
+
+let take_while ~f xs = split_while ~f xs |> fst
+let take_while ~f xs = split_while ~f xs |> snd
 
 
+(* begin section ---------------------------------------------------- *)
+(* NOTE this section copied verbatim from JS core_kernel *)
 (* passes in the index of the elt to the map function; useful for numbering *)
-let mapi = Core_kernel.List.mapi
+let rev_mapi l ~f =
+  let rec loop i acc = function
+    | [] -> acc
+    | h :: t -> loop (i + 1) (f i h :: acc) t
+  in
+  loop 0 [] l
+
+let mapi l ~f = List.rev (rev_mapi l ~f)
+
+
+(* end section ------------------------------------------------------ *)
 
 let index xs = xs |> mapi ~f:(fun i t -> (t,i))
 

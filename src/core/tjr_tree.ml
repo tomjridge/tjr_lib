@@ -28,7 +28,7 @@ let rec subtrees t = (
   | L xs -> [t])
 
 (*
-let mapi = Core_kernel.Std.List.mapi
+let mapi = Tjr_list.mapi
 
 let index xs = mapi ~f:(fun i t -> (t,i)) xs
 

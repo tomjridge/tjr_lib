@@ -3,7 +3,7 @@ set -a # export all vars
 
 
 libname="tjr_lib_core"
-required_packages="str,core_kernel,ppx_deriving_yojson,rresult"
+required_packages="ppx_deriving_yojson"  # str?
 description="Various useful OCaml functions"
 source ../../VERSION
 

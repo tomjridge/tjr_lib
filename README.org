@@ -14,10 +14,22 @@ substrings, trees etc.
 
 * Dependencies
 
-| core_kernel         | Core_kernel.List implementations of common list ops           |
-| ppx_sexp_conv       | tjr_tree pretty-printing                                      |
-| ppx_deriving_yojson | tjr_tree pretty-printing; yojson_diff                         |
-| rresult             | compat; FIXME remove? only used in one place (get_ok)         |
-| bos                 | read and write files; execute external command FIXME replace? |
-| fileutils           | tjr_file, permissions handling                                |
-| omd                 | markdown processing                                           |
+core:
+
+| ppx_deriving_yojson | tjr_tree pretty-printing; yojson_diff; could consider moving to non-core |
+| XX ppx_sexp_conv    | tjr_tree pretty-printing (currently commented out)                       |
+|                     |                                                                          |
+
+
+Old deps: 
+| str                 |                                                                                                     |
+| core_kernel         | Core_kernel.List implementations of common list ops FIXME worth eliminating in order to reduce deps |
+| rresult             | compat; FIXME remove? only used in one place (get_ok)                                               |
+
+
+non-core:
+
+| tjr_lib_core  |                                                               |
+| bos           | read and write files; execute external command FIXME replace? |
+| fileutils     | tjr_file, permissions handling                                |
+| omd           | markdown processing                                           |

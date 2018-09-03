@@ -1,1 +1,3 @@
-let get_ok = Rresult.R.get_ok
+let get_ok (r:('a,'b)result) = match r with
+  | Ok x -> x
+  | Error e -> failwith __LOC__
