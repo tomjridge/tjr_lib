@@ -33,3 +33,4 @@ src/*.x
 /src/tjr_store.ml
 /src/core/META
 /src/non_core/META
+.dockerfile/tjr_lib/
