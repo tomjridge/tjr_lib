@@ -1,4 +1,4 @@
 FROM impfs_base_docker_image
 
-COPY src src
-RUN eval `opam config env` && make -C src
+COPY tjr_lib tjr_lib
+RUN eval `opam config env` && make -C tjr_lib

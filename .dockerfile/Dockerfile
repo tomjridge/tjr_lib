@@ -1,5 +1,7 @@
 FROM impfs_base_docker_image
 
+RUN echo edit to rebuild...
+
 RUN git clone https://github.com/tomjridge/tjr_lib.git
 
 # -n means don't build etc
