@@ -21,12 +21,12 @@ build: [
 install: [make "install"]
 remove: ["ocamlfind" "remove" "tjr_lib"]
 
+# NOTE no need to `opam install str`; no need to depend on str
 depends: [
   "ocamlfind"
   "ppx_deriving_yojson"
   "bos"
   "fileutils"
-  "str"
   "omd"
 ]
 

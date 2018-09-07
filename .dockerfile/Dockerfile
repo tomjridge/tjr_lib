@@ -1,6 +1,4 @@
-FROM ubuntu_16.04_with_ocaml_4.06
-
-RUN eval `opam config env` && opam install ppx_deriving_yojson bos fileutils str omd
+FROM impfs_base_docker_image
 
 RUN git clone https://github.com/tomjridge/tjr_lib.git
 

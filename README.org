@@ -31,5 +31,5 @@ non-core:
 | tjr_lib_core |                                                               |
 | bos          | read and write files; execute external command FIXME replace? |
 | fileutils    | tjr_file, permissions handling                                |
-| str          | tjr_file, sanitization                                        |
+| str          | tjr_file, sanitization; doesn't need to be installed via opam |
 | omd          | markdown processing                                           |
