@@ -22,14 +22,14 @@ core:
 
 
 Old deps: 
-| str                 |                                                                                                     |
 | core_kernel         | Core_kernel.List implementations of common list ops FIXME worth eliminating in order to reduce deps |
 | rresult             | compat; FIXME remove? only used in one place (get_ok)                                               |
 
 
 non-core:
 
-| tjr_lib_core  |                                                               |
-| bos           | read and write files; execute external command FIXME replace? |
-| fileutils     | tjr_file, permissions handling                                |
-| omd           | markdown processing                                           |
+| tjr_lib_core |                                                               |
+| bos          | read and write files; execute external command FIXME replace? |
+| fileutils    | tjr_file, permissions handling                                |
+| str          | tjr_file, sanitization                                        |
+| omd          | markdown processing                                           |

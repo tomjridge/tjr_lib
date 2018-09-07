@@ -26,6 +26,7 @@ depends: [
   "ppx_deriving_yojson"
   "bos"
   "fileutils"
+  "str"
   "omd"
 ]
 

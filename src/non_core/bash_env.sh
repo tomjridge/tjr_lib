@@ -5,7 +5,7 @@ set -a # export all vars
 # NOTE in toplevel you need to #require "bos.top" and bos.setup;;
 
 libname="tjr_lib"
-required_packages="tjr_lib_core,bos,bos.setup,fileutils,omd"
+required_packages="tjr_lib_core,bos,bos.setup,fileutils,omd,str"
 description="Various useful OCaml functions"
 source ../../VERSION
 
