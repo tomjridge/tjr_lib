@@ -1,6 +1,6 @@
 SHELL:=bash
 
-all:
+build:
 	$(MAKE) -C src
 
 install: 

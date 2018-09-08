@@ -3,9 +3,9 @@ set -a # export all vars
 
 
 libname="tjr_lib_core"
+package_name="${libname}"
 required_packages="ppx_deriving_yojson"  # str?
 description="Various useful OCaml functions"
-source ../../VERSION
 
 # function mk_links() {
 #     for f in core/*.ml non_core/*.ml; do ln -sf $f .; done
@@ -56,10 +56,9 @@ cmxs="${mls//.ml/.cmx}"
 natives="
 "
 
-# don't mess about with package names
-package_name="${libname}"
 
 function mk_meta() {
+v=`cat ../../VERSION`
 cat >META <<EOF
 name="$package_name"
 description="$description"

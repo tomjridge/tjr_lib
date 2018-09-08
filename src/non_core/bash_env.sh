@@ -5,9 +5,10 @@ set -a # export all vars
 # NOTE in toplevel you need to #require "bos.top" and bos.setup;;
 
 libname="tjr_lib"
+package_name="${libname}"
 required_packages="tjr_lib_core,bos,bos.setup,fileutils,omd,str"
 description="Various useful OCaml functions"
-source ../../VERSION
+
 
 
 # function mk_links() {
@@ -58,9 +59,8 @@ cmxs="${mls//.ml/.cmx}"
 natives="
 "
 
-package_name="${libname}"
-
 function mk_meta() {
+v=`cat ../../VERSION`
 cat >META <<EOF
 name="$package_name"
 description="$description"
