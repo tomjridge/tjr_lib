@@ -14,7 +14,7 @@ all: FORCE
 	@echo "NOTE cma contains: $$cmos" # simple check
 	$$mk_cma -g -a -o $$libname.cma $$cmos
 	$$mk_cmxa -g -a -o $$libname.cmxa $$cmxs
-	$(MAKE) install
+# 	$(MAKE) install
 
 
 install:
