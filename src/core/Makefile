@@ -8,13 +8,13 @@ BASH_ENV:=bash_env.sh
 export BASH_ENV
 
 
-all: FORCE
+build: FORCE
 	$$ocamlc -c $$mls
 	$$ocamlopt -c $$mls
 	@echo "NOTE cma contains: $$cmos" # simple check
 	$$mk_cma -g -a -o $$libname.cma $$cmos
 	$$mk_cmxa -g -a -o $$libname.cmxa $$cmxs
-# 	$(MAKE) install
+	$(MAKE) install # we do this so that we can build non_core; FIXME we install twice
 
 
 install:

@@ -1,6 +1,6 @@
 SUBDIRS:=core non_core
 
-all: 
+build: 
 	for f in $(SUBDIRS); do $(MAKE) -C $$f $@; done
 
 

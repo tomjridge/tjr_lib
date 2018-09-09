@@ -10,6 +10,9 @@ all:
 	chmod -R ugo+rw tjr_lib
 	docker build -t $(NAME)_local -f Dockerfile.local .
 
+using_opam:
+	docker build -t $(NAME)_using_opam -f Dockerfile.using_opam .
+
 #	docker run -ti $NAME bash
 clean:
 	rm -rf tjr_lib
