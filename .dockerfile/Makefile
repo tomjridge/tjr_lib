@@ -1,16 +1,15 @@
 NAME:=tjr_lib
 
 all: 
+	$(MAKE) -C .. clean
 	$(MAKE) local
 	$(MAKE) from_github
 	$(MAKE) using_opam
 
 local:
 	rm -rf tjr_lib
-	$(MAKE) -C ../src clean
 	mkdir tjr_lib
 	rsync --exclude='.dockerfile/*' --exclude='.git/*' -vaz ../ ./tjr_lib
-	chmod -R ugo+rw tjr_lib
 	docker build -t $(NAME)_local -f Dockerfile.local .
 
 from_github:
