@@ -3,7 +3,7 @@
 (* FIXME reduce dependence on Bos? *)
 
 open Tjr_result
-open Tjr_list
+(* open Tjr_list *)
 open Tjr_string
 open Bos.OS
 

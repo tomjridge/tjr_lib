@@ -13,7 +13,7 @@ type ('k,'v,'t) map_ops = {
 
 (* prefer m2 bindings over m1 *)
 let map_union ~map_ops ~m1 ~m2 = 
-  let { map_add; map_bindings } = map_ops in
+  let { map_add; map_bindings; _ } = map_ops in
   Tjr_list.with_each_elt'
     ~step:(fun ~state:m1' (k,op) -> map_add k op m1')
     ~init_state:m1

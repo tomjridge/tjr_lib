@@ -1,0 +1,26 @@
+B /home/tr61/.opam/impfs/lib/biniou
+B /home/tr61/.opam/impfs/lib/easy-format
+B /home/tr61/.opam/impfs/lib/ocaml
+B /home/tr61/.opam/impfs/lib/ocaml-migrate-parsetree
+B /home/tr61/.opam/impfs/lib/ocaml/compiler-libs
+B /home/tr61/.opam/impfs/lib/ppx_derivers
+B /home/tr61/.opam/impfs/lib/ppx_deriving
+B /home/tr61/.opam/impfs/lib/ppx_deriving_yojson
+B /home/tr61/.opam/impfs/lib/ppx_tools
+B /home/tr61/.opam/impfs/lib/result
+B /home/tr61/.opam/impfs/lib/yojson
+B ../../_build/default/src/core/.tjr_lib_core.objs
+S /home/tr61/.opam/impfs/lib/biniou
+S /home/tr61/.opam/impfs/lib/easy-format
+S /home/tr61/.opam/impfs/lib/ocaml
+S /home/tr61/.opam/impfs/lib/ocaml-migrate-parsetree
+S /home/tr61/.opam/impfs/lib/ocaml/compiler-libs
+S /home/tr61/.opam/impfs/lib/ppx_derivers
+S /home/tr61/.opam/impfs/lib/ppx_deriving
+S /home/tr61/.opam/impfs/lib/ppx_deriving_yojson
+S /home/tr61/.opam/impfs/lib/ppx_tools
+S /home/tr61/.opam/impfs/lib/result
+S /home/tr61/.opam/impfs/lib/yojson
+S .
+FLG -ppx '/mnt/sdb7/tom/github/a_tjr_lib/_build/default/.ppx/ppx_deriving_yojson/ppx.exe --as-ppx --cookie '\''library-name="tjr_lib_core"'\'''
+FLG -open Tjr_lib_core -w @a-4-29-40-41-42-44-45-48-58-59-60-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -27-8-6-40-32-39

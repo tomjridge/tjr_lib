@@ -1,13 +1,13 @@
 SHELL:=bash
 
 build:
-	$(MAKE) -C src build
+	dune build 
 
 install: 
-	$(MAKE) -C src install
+	dune install
 
 uninstall: 
-	$(MAKE) -C src uninstall
+	dune uninstall
 
 clean: 
-	$(MAKE) -C src clean 
+	dune clean

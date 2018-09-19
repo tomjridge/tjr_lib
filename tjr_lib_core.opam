@@ -1,0 +1,37 @@
+opam-version: "1.2"
+name: "tjr_lib_core"
+version: "0.0.1" # this should match the VERSION file
+
+# ----------------------------------------------------------------------
+# FIXME at the moment we have two ocamlfind packages and one opam
+# package
+
+# FIXME opam doesn't like comments at end of file?
+
+maintainer: "Tom Ridge <tom.j.ridge@googlemail.com>"
+authors: "Tom Ridge <tom.j.ridge@googlemail.com>"
+homepage: "https://github.com/tomjridge/tjr_lib"
+bug-reports: "https://github.com/tomjridge/tjr_lib/issues"
+dev-repo: "https://github.com/tomjridge/tjr_lib.git"
+
+# ----------------------------------------------------------------------
+
+# NOTE no need to `opam install str`; no need to depend on str
+depends: [
+  "ocamlfind"
+  "ppx_deriving_yojson"
+  "bos"
+  "fileutils"
+  "omd"
+]
+
+# ----------------------------------------------------------------------
+
+build: [make]
+
+install: [make "install"]
+
+remove: [make "uninstall"] # FIXME not allowed to do this for uninstall?
+
+
+
