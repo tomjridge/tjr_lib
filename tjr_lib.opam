@@ -27,7 +27,7 @@ depends: [
 
 # ----------------------------------------------------------------------
 
-build: [make]
+build: ["dune" "build" "-p" name "-j" jobs]
 
 install: [make "install"]
 
