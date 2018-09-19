@@ -1,7 +1,6 @@
 NAME:=tjr_lib
 
 all: 
-	$(MAKE) -C .. clean
 	$(MAKE) local
 	$(MAKE) from_github
 	$(MAKE) using_opam
