@@ -23,15 +23,10 @@ depends: [
   "bos"
   "fileutils"
   "omd"
+  "tjr_lib_core"
 ]
 
 # ----------------------------------------------------------------------
 
 build: ["dune" "build" "-p" name "-j" jobs]
-
-install: [make "install"]
-
-remove: [make "uninstall"] # FIXME not allowed to do this for uninstall?
-
-
 

@@ -19,19 +19,10 @@ dev-repo: "https://github.com/tomjridge/tjr_lib.git"
 # NOTE no need to `opam install str`; no need to depend on str
 depends: [
   "ocamlfind"
+  "yojson"
   "ppx_deriving_yojson"
-  "bos"
-  "fileutils"
-  "omd"
 ]
 
 # ----------------------------------------------------------------------
 
 build: ["dune" "build" "-p" name "-j" jobs]
-
-install: [make "install"]
-
-remove: [make "uninstall"] # FIXME not allowed to do this for uninstall?
-
-
-
