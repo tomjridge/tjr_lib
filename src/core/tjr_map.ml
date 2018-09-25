@@ -19,6 +19,12 @@ let map_union ~map_ops ~m1 ~m2 =
     ~init_state:m1
     (map_bindings m2)
 
+let list_to_map ~map_ops kvs = 
+  Tjr_list.with_each_elt
+    ~list:kvs
+    ~step:(fun ~state (k,v) -> map_ops.map_add k v state)
+    ~init:map_ops.map_empty
+
 
 (* reuse OCaml's maps *)
 module Make = functor (Ord:Map.OrderedType) -> struct

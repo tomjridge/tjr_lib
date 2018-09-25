@@ -1,0 +1,5 @@
+_build/
+/src/core/.merlin
+/src/non_core/.merlin
+/tjr_lib.install
+/tjr_lib_core.install
