@@ -1,1 +1,1 @@
-ocamlfind ppx_deriving_yojson bos fileutils omd
+ocamlfind ppx_deriving_yojson  ppx_deriving_yojson.runtime bos fileutils omd

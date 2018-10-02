@@ -21,6 +21,7 @@ depends: [
   "ocamlfind"
   "yojson"
   "ppx_deriving_yojson"
+  "ppx_deriving_yojson.runtime"
 ]
 
 # ----------------------------------------------------------------------
