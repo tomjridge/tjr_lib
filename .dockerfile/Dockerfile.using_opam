@@ -1,5 +1,10 @@
 FROM impfs_base_docker_image
 
-RUN echo edit to rebuild...
+RUN echo edit to rebuild....
 
-RUN eval `opam config env` && opam pin add -n tjr_lib_core https://github.com/tomjridge/tjr_lib.git && opam pin add -n tjr_lib https://github.com/tomjridge/tjr_lib.git && opam install tjr_lib
+RUN eval `opam config env` && opam install dune
+
+RUN eval `opam config env` && opam pin add -n tjr_lib_core https://github.com/tomjridge/tjr_lib.git 
+RUN eval `opam config env` && opam install tjr_lib_core
+RUN eval `opam config env` && opam pin add -n tjr_lib https://github.com/tomjridge/tjr_lib.git 
+RUN eval `opam config env` && opam install tjr_lib

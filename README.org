@@ -16,9 +16,10 @@ substrings, trees etc.
 
 core:
 
-| ppx_deriving_yojson,ppx_deriving_yojson.runtime | tjr_tree pretty-printing; yojson_diff; could consider moving to non-core |
-| XX ppx_sexp_conv                                | tjr_tree pretty-printing (currently commented out)                       |
-|                                                 |                                                                          |
+| ppx_deriving_yojson         | tjr_tree pretty-printing; yojson_diff; could consider moving to non-core |
+| ppx_deriving_yojson.runtime | ocamlfind lib installed with ppx_deriving_yojson                         |
+| XX ppx_sexp_conv            | tjr_tree pretty-printing (currently commented out)                       |
+|                             |                                                                          |
 
 
 Old deps: 

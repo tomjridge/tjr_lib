@@ -20,8 +20,8 @@ dev-repo: "https://github.com/tomjridge/tjr_lib.git"
 
 depends: [
   "ocamlfind"
+  "dune"
   "ppx_deriving_yojson"
-  "ppx_deriving_yojson.runtime"
   "bos"
   "fileutils"
   "omd"

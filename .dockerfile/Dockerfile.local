@@ -2,5 +2,6 @@ FROM impfs_base_docker_image
 
 RUN echo rebuild from here...
 
-COPY --chown=opam:opam tjr_lib tjr_lib
+COPY tjr_lib tjr_lib
+RUN sudo chown -R opam:opam tjr_lib
 RUN eval `opam config env` && make -C tjr_lib
