@@ -159,3 +159,18 @@ let fold_assoc_comm ~op xs =
 let max_list xs = 
   fold_assoc_comm ~op:(max) (0::xs)
 
+
+
+(* filter_map ------------------------------------------------------- *)
+
+(* map a function from 'a to 'b option, but remove None *)
+
+(** NOTE returns a reversed version of the list *)
+let filter_rev_map ~(f:'a -> 'b option) xs =
+  with_each_elt
+    ~list:xs
+    ~step:(fun ~state x -> match f x with
+      | None -> state
+      | Some fx -> fx::state)
+    ~init:[]
+  
