@@ -53,3 +53,18 @@ module String_ord = struct
 end
 
 module Map_string = Map.Make(String_ord)
+
+
+(* assoc list as map ------------------------------------------------ *)
+
+let make_assoc_list_map () =
+  let remove k kvs = List.filter (fun (k',v) -> k' <> k) kvs in
+  { map_empty=[];
+    map_is_empty=(fun x -> x=[]);
+    map_add=(fun k v t -> (k,v)::(remove k t));
+    map_remove=(fun k t -> remove k t);
+    map_find=(fun k t -> List.assoc_opt k t);
+    map_bindings=(fun t -> t); 
+  }
+
+let _ = make_assoc_list_map
