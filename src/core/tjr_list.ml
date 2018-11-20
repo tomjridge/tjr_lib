@@ -173,4 +173,17 @@ let filter_rev_map ~(f:'a -> 'b option) xs =
       | None -> state
       | Some fx -> fx::state)
     ~init:[]
-  
+
+
+(* assoc_list_remdups   --------------------------------------------- *)
+
+let assoc_list_remdups kvs =
+  let rec loop (keys_sofar,kvs_sofar, rest) =
+    match rest with
+    | [] -> kvs_sofar
+    | (k,v)::rest -> 
+      match List.mem k keys_sofar with
+      | true -> loop (keys_sofar,kvs_sofar,rest)
+      | false -> loop (k::keys_sofar,(k,v)::kvs_sofar,rest)
+  in
+  loop ([],[],kvs)
