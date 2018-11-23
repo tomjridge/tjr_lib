@@ -2,4 +2,5 @@
   (public_name tjr_lib)
   (flags (:standard -w -27-8-6-40-32-39-33))
   (wrapped false)
-  (libraries tjr_lib_core bos bos.setup fileutils omd str))
+  (preprocess (pps ppx_deriving_yojson))
+  (libraries tjr_lib_core bos bos.setup fileutils omd str yojson))
