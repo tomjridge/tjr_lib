@@ -46,7 +46,7 @@ end
 let indexes ~(sub:string) b = Span.(
     let s = sub|>of_string in
     let b = b|>of_string in
-    pred_to_indexes (fun x -> if starts s x then [x.i] else []) b
+    pred_to_indexes (fun x -> if starts ~prefix:s x then [x.i] else []) b
   )
 
 
@@ -67,12 +67,12 @@ let starts_with ~prefix b =
     
 
 let ends ~suffix b = 
-  indexes suffix b |> 
+  indexes ~sub:suffix b |> 
   List.mem (String.length b - String.length suffix)
 
 let ends_with = ends
 
-let contains ~sub b = indexes sub b <> []
+let contains ~sub b = indexes ~sub b <> []
 
 
 let split_at s n = (String.sub s 0 n, String.sub s n (String.length s - n))
@@ -80,7 +80,7 @@ let split_at s n = (String.sub s 0 n, String.sub s n (String.length s - n))
 
 (* this replaces the first occurrence; error if no occurrence *)
 let replace_first ~sub ~rep b =
-  indexes sub b |> 
+  indexes ~sub b |> 
   (fun xs -> split_at b (List.hd xs)) |> 
   (fun (b1,b2) -> (
        let (_,b3) = split_at b2 (String.length sub) in
@@ -89,7 +89,7 @@ let replace_first ~sub ~rep b =
 
 (* this replaces the last occurrence; error if no occurrence *)
 let replace_last ~sub ~rep b =
-  indexes sub b |> 
+  indexes ~sub b |> 
   (fun xs -> split_at b (list_last xs)) |> 
   (fun (b1,b2) -> (
        let (_,b3) = split_at b2 (String.length sub) in
@@ -99,8 +99,8 @@ let replace_last ~sub ~rep b =
 (* FIXME may want to have a non-recursive replace, so it works if s2 contains s1 *)
 let replace_all ~sub ~rep b = (
   let b = ref b in
-  while (contains sub !b) do
-    b:=replace_first sub rep !b
+  while (contains ~sub !b) do
+    b:=replace_first ~sub ~rep !b
   done;
   !b)
 
@@ -115,14 +115,14 @@ let drop n s =
 
 
 let split_on_first ~sub b = (
-  indexes sub b |> 
+  indexes ~sub b |> 
   (fun is_ -> 
      let (b1,b2) = split_at b (List.hd is_) in
      (b1,drop (String.length sub) b2)))
 
 
 let split_on_last ~sub b = (
-  indexes sub b |> 
+  indexes ~sub b |> 
   (fun is_ -> 
      let (b1,b2) = split_at b (list_last is_) in
      (b1,drop (String.length sub) b2)))
@@ -133,8 +133,8 @@ let split_on_last ~sub b = (
 let split_on_all ~sub b = (
   let xs = ref [] in
   let b = ref b in
-  while (contains sub !b) do
-    let (b1,b2) = split_on_first sub !b in
+  while (contains ~sub !b) do
+    let (b1,b2) = split_on_first ~sub !b in
     xs:=b1::!xs;
     b:=b2      
   done;
@@ -159,7 +159,7 @@ let matches ~re s = Str.(
 
 let replace_list ~subs s = (
   let s = ref s in
-  let _ = List.iter (fun (x,v) -> s:=replace_all x v !s) subs in
+  let _ = List.iter (fun (sub,rep) -> s:=replace_all ~sub ~rep !s) subs in
   !s
 )
 
