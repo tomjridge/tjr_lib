@@ -9,3 +9,5 @@ module Make_type_isomorphic_to_int() : TYPE_ISOMORPHIC_TO_INT = struct
   let int2t i = i
   let t2int i = i
 end
+
+let compare: int -> int -> int = Pervasives.compare

@@ -26,3 +26,18 @@ module Make = functor (Ord : Set.OrderedType) -> struct
   } 
 
 end
+
+
+(* some common instantiations --------------------------------------- *)
+
+module Int_set = Set.Make(
+struct 
+  type t = int 
+  let compare : t -> t -> int = Pervasives.compare 
+end)
+
+module String_set = Set.Make(
+struct 
+  type t = string
+  let compare : t -> t -> int = Pervasives.compare 
+end)
