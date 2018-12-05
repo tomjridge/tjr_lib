@@ -57,7 +57,7 @@ let test ~set_ops ~test_ops =
   in
 
   let test ~ops ~init_states = 
-    Printf.printf "%s: tests starting\n%!" __LOC__;
+    Printf.printf "%s: tests starting\n%!" __MODULE__;
     let ts = ref (Some {todo=set_ops.of_list init_states; done_=set_ops.empty()}) in
     while !ts <> None do
       ts:=step ops (!ts|>dest_Some) 
@@ -105,7 +105,7 @@ let test_till_no_successor_states ~test_ops =
   in
 
   let test ~ops ~init_states = 
-    Printf.printf "%s: tests starting\n%!" __LOC__;
+    Printf.printf "%s: tests starting\n%!" __MODULE__;
     let todo = ref (Some init_states) in 
     while !todo <> None do
       todo:=step ops (!todo|>dest_Some) 

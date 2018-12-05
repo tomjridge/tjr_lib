@@ -17,7 +17,7 @@ type log_ops = {
   log_n: int ref;
   jlog:Yojson.Safe.json -> unit;
   print_last_n: unit -> unit;
-  with_log: 'a 'b. ('a -> 'b) -> 'a -> 'b;
+  (* with_log: 'a 'b. ('a -> 'b) -> 'a -> 'b; *)
 }
 
 (* NOTE logs accumulate in xs, so memory leak if used in
@@ -36,10 +36,23 @@ let mk_log_ops () =
             |> Tjr_list.take (min (List.length xs) !log_n)
             |> List.iter (fun f -> print_endline (f())))
   in
-  let with_log f x = try f x with e -> (
+  let _with_log f x = try f x with e -> (
       e|>Printexc.to_string|>print_endline;
       print_last_n ();
       raise e)
   in      
-  {log;log_lazy;log_now;log_n;jlog;print_last_n;with_log}
+  {log;log_lazy;log_now;log_n;jlog;print_last_n;(* with_log *) }
 
+(** The "do nothing" logger *)
+let noop_log_ops = 
+  let noop = fun _ -> () in
+  {
+    log=noop;
+    log_lazy=noop;
+    log_now=noop;
+    log_n=ref 0;
+    jlog=noop;
+    print_last_n=noop;
+  }
+    
+  
