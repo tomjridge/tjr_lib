@@ -187,3 +187,14 @@ let assoc_list_remdups kvs =
       | false -> loop (k::keys_sofar,(k,v)::kvs_sofar,rest)
   in
   loop ([],[],kvs)
+
+
+(* FIXME inefficient *)
+let mk_range ~min ~max ~step = 
+  let xs = ref [] in
+  let n = ref min in
+  while !n <= max do
+    xs:=!n::!xs;
+    n:=!n+step
+  done;
+  List.rev !xs 
