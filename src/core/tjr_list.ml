@@ -18,8 +18,13 @@ let assoc_inv : 'a -> ('b * 'a) list -> 'b =
   fun x xs -> xs |> List.map (function (x,y) -> (y,x)) |>
   List.assoc x
 
+(* tail recursive *)
+let from_to l h = 
+  let rec f l sofar = 
+    if l>h then List.rev sofar else f (l+1) (l::sofar)
+  in 
+  f l [] 
 
-let rec from_to l h = if l>h then [] else l :: from_to (l+1) h
 
 
 let rec take n xs = if n = 0 then [] else List.hd xs :: take (n-1) (List.tl xs)
