@@ -2,7 +2,7 @@
 
 module Make(S:sig 
     type config [@@deriving yojson]
-val filename: string
+    val filename: string
 end) = struct
   open S
 
