@@ -11,6 +11,7 @@ type ('a,'t) set_ops = {
   split: 'a -> 't -> ('t * bool * 't);
 }
 
+(*
 (** NOTE the dummy argument, which can be none, identifies the target
    carrier type; this adds a small amount of extra type safety since
    we can keep carriers separate *)
@@ -28,5 +29,13 @@ let make_set_ops (type elt t) (dummy:t option) (compare: elt -> elt -> int) =
   let max_elt_opt s = S.max_elt_opt (from_t s) in
   let split x s = S.split x (from_t s) |> fun (s1,b,s2) -> (to_t s1,b,to_t s2) in
   {empty; mem; add; remove; cardinal; elements; min_elt_opt; max_elt_opt; split}
+
+let _ = make_set_ops
+*)
+
+let make_set_ops (type elt' t') (m:(module Set.S with type elt=elt' and type t = t')) = 
+  let (module M) = m in
+  let open M in
+  {empty; mem; add; remove; cardinal; elements; min_elt_opt; max_elt_opt; split }
 
 let _ = make_set_ops
