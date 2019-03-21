@@ -83,4 +83,5 @@ let bindings t = (poly_map_ops_2()).bindings t
 let max_binding_opt t = (poly_map_ops_2()).max_binding_opt t 
 let min_binding_opt t = (poly_map_ops_2()).min_binding_opt t 
 let split k t = (poly_map_ops_2()).split k t
+let find k t = (poly_map_ops_2()).find k t
 let find_opt k t = (poly_map_ops_2()).find_opt k t
