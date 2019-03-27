@@ -17,11 +17,15 @@ type ('k,'v,'t) map_ops = {
   split:'k -> 't -> 't * 'v option * 't;
   find: 'k -> 't -> 'v;
   find_opt: 'k -> 't -> 'v option;
+  disjoint_union: 't -> 't -> 't;
 }
 
 module Make(Ord: Map.OrderedType) = struct
   include Map.Make(Ord)
-  let map_ops = { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt }
+  let disjoint_union t1 t2 = 
+    let f = fun k v1 v2 -> failwith "disjoint_union: duplicate key" in
+    union f t1 t2
+  let map_ops = { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union }
 end
 
 (* to expose polymorphic operations *)
@@ -31,7 +35,7 @@ end
 type ('k,'v,'t) map  (* phant type iso to 'v Map.Make(K,k_cmp).t *)
 
 let make_map_ops (type k v t) k_cmp : (k,v,(k,v,t) map)map_ops =
-  let module M = Map.Make(struct type t = k let compare=k_cmp end) in
+  let module M = Make(struct type t = k let compare=k_cmp end) in
   let to_t (x:v M.t) : (k,v,t) map = Obj.magic x in
   let from_t (x:(k,v,t) map) : v M.t = Obj.magic x in
   let empty = M.empty |> to_t in
@@ -46,7 +50,8 @@ let make_map_ops (type k v t) k_cmp : (k,v,(k,v,t) map)map_ops =
   let split k t = M.split k (from_t t) |> fun (t1,k,t2) -> (to_t t1,k,to_t t2) in
   let find k t = M.find k (from_t t) in
   let find_opt k t = M.find_opt k (from_t t) in
-  { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt }
+  let disjoint_union t1 t2 = M.disjoint_union (from_t t1) (from_t t2) |> to_t in
+  { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union }
   
 
 let _ = make_map_ops
@@ -57,7 +62,7 @@ let _ = make_map_ops
 type ('k,'v) poly_map_2
 
 let poly_map_ops_2 (type k v) () : (k,v,(k,v) poly_map_2)map_ops =
-  let module M = Map.Make(struct type t = k let compare=Pervasives.compare end) in
+  let module M = Make(struct type t = k let compare=Pervasives.compare end) in
   let to_t (x:v M.t) : (k,v) poly_map_2 = Obj.magic x in
   let from_t (x:(k,v) poly_map_2) : v M.t = Obj.magic x in
   let empty = M.empty |> to_t in
@@ -72,7 +77,8 @@ let poly_map_ops_2 (type k v) () : (k,v,(k,v) poly_map_2)map_ops =
   let split k t = M.split k (from_t t) |> fun (t1,k,t2) -> (to_t t1,k,to_t t2) in
   let find k t = M.find k (from_t t) in
   let find_opt k t = M.find_opt k (from_t t) in
-  { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt }
+  let disjoint_union t1 t2 = M.disjoint_union (from_t t1) (from_t t2) |> to_t in
+  { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union }
 
 let is_empty x = (poly_map_ops_2()).is_empty x
 let mem x s = (poly_map_ops_2()).mem x s
@@ -85,3 +91,4 @@ let min_binding_opt t = (poly_map_ops_2()).min_binding_opt t
 let split k t = (poly_map_ops_2()).split k t
 let find k t = (poly_map_ops_2()).find k t
 let find_opt k t = (poly_map_ops_2()).find_opt k t
+let disjoint_union t1 t2 = (poly_map_ops_2()).disjoint_union t1 t2
