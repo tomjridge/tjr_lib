@@ -12,6 +12,7 @@ type ('k,'v,'t) map_ops = {
   remove:'k -> 't -> 't;
   cardinal: 't -> int;
   bindings: 't -> ('k*'v) list;
+  of_bindings: ('k*'v) list -> 't;
   max_binding_opt: 't -> ('k*'v)option;
   min_binding_opt: 't -> ('k*'v)option;
   split:'k -> 't -> 't * 'v option * 't;
@@ -25,7 +26,9 @@ module Make(Ord: Map.OrderedType) = struct
   let disjoint_union t1 t2 = 
     let f = fun k v1 v2 -> failwith "disjoint_union: duplicate key" in
     union f t1 t2
-  let map_ops = { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union }
+  let of_bindings kvs = 
+    kvs |> List.to_seq |> of_seq
+  let map_ops = { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings }
 end
 
 (* to expose polymorphic operations *)
@@ -51,7 +54,8 @@ let make_map_ops (type k v t) k_cmp : (k,v,(k,v,t) map)map_ops =
   let find k t = M.find k (from_t t) in
   let find_opt k t = M.find_opt k (from_t t) in
   let disjoint_union t1 t2 = M.disjoint_union (from_t t1) (from_t t2) |> to_t in
-  { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union }
+  let of_bindings kvs = M.of_bindings kvs |> to_t in
+  { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings }
   
 
 let _ = make_map_ops
@@ -78,7 +82,8 @@ let poly_map_ops_2 (type k v) () : (k,v,(k,v) poly_map_2)map_ops =
   let find k t = M.find k (from_t t) in
   let find_opt k t = M.find_opt k (from_t t) in
   let disjoint_union t1 t2 = M.disjoint_union (from_t t1) (from_t t2) |> to_t in
-  { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union }
+  let of_bindings kvs = M.of_bindings kvs |> to_t in
+  { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings }
 
 let is_empty x = (poly_map_ops_2()).is_empty x
 let mem x s = (poly_map_ops_2()).mem x s
@@ -92,3 +97,4 @@ let split k t = (poly_map_ops_2()).split k t
 let find k t = (poly_map_ops_2()).find k t
 let find_opt k t = (poly_map_ops_2()).find_opt k t
 let disjoint_union t1 t2 = (poly_map_ops_2()).disjoint_union t1 t2
+let of_bindings kvs = (poly_map_ops_2()).of_bindings kvs
