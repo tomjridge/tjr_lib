@@ -85,6 +85,7 @@ let poly_map_ops_2 (type k v) () : (k,v,(k,v) poly_map_2)map_ops =
   let of_bindings kvs = M.of_bindings kvs |> to_t in
   { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings }
 
+let empty () = (poly_map_ops_2()).empty
 let is_empty x = (poly_map_ops_2()).is_empty x
 let mem x s = (poly_map_ops_2()).mem x s
 let add k v t = (poly_map_ops_2()).add k v t

@@ -119,6 +119,16 @@ let with_each_elt
 
 
 
+let iter_opt (f:'a -> 'a option) = 
+  let rec loop x = 
+    match f x with
+    | None -> x
+    | Some x -> loop x
+  in
+  fun x -> loop x
+
+
+
 module List_as_set = struct
 
 let subset xs ys = List.for_all (fun x -> List.mem x ys) xs
