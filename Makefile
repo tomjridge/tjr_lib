@@ -18,6 +18,7 @@ all:
 	$(MAKE) clean
 	$(MAKE) build
 	$(MAKE) install
+	$(MAKE) docs
 
 SRC:=_build/default/_doc/_html
 DST:=docs
