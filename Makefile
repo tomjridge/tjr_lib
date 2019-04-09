@@ -1,14 +1,29 @@
 SHELL:=bash
+DUNE:=dune
 
 build:
-	dune build 
+	$(DUNE) build 
 
 # NOTE install and uninstall do not involve opam; to build and install with opam, first pin
 install: 
-	dune install
+	$(DUNE) install
 
 uninstall: 
-	dune uninstall
+	$(DUNE) uninstall
 
 clean: 
-	dune clean
+	$(DUNE) clean
+
+all:
+	$(MAKE) clean
+	$(MAKE) build
+	$(MAKE) install
+
+SRC:=_build/default/_doc/_html
+DST:=docs
+docs: FORCE
+	$(DUNE) build @doc
+	rm -rf $(DST)/*
+	cp -R $(SRC)/* $(DST)
+
+FORCE:

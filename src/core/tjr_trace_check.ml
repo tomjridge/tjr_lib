@@ -1,6 +1,6 @@
-(** Simple testing/ trace checking. *)
+(** Simple testing/ trace checking. FIXME deprecate? *)
 
-(* 
+(**
 
 We have:
 

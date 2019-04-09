@@ -2,3 +2,5 @@ core is for pure-ocaml stuff
 
 non_core is for stuff that depends on system-provided functionality
 (files etc)
+
+FIXME at the moment, core depends on json, which involves files etc

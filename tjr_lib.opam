@@ -18,10 +18,10 @@ dev-repo: "https://github.com/tomjridge/tjr_lib.git"
 
 # NOTE no need to `opam install str`; no need to depend on str
 
+#   "ppx_deriving_yojson" already in tjr_lib_core
 depends: [
   "ocamlfind"
   "dune"
-  "ppx_deriving_yojson"
   "bos"
   "fileutils"
   "omd"
