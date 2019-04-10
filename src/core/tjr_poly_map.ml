@@ -5,6 +5,7 @@
 
 (* FIXME add more of these operations as needed *)
 type ('k,'v,'t) map_ops = {
+  k_cmp: 'k -> 'k -> int;
   empty: 't;
   is_empty:'t -> bool;
   mem:'k -> 't -> bool;
@@ -19,6 +20,8 @@ type ('k,'v,'t) map_ops = {
   find: 'k -> 't -> 'v;
   find_opt: 'k -> 't -> 'v option;
   disjoint_union: 't -> 't -> 't;
+  find_first_opt: ('k -> bool) -> 't -> ('k * 'v) option;
+  find_last_opt: ('k -> bool) -> 't -> ('k * 'v) option;
 }
 
 module Make(Ord: Map.OrderedType) = struct
@@ -28,7 +31,8 @@ module Make(Ord: Map.OrderedType) = struct
     union f t1 t2
   let of_bindings kvs = 
     kvs |> List.to_seq |> of_seq
-  let map_ops = { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings }
+  let k_cmp = Ord.compare
+  let map_ops = { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings; find_first_opt; find_last_opt }
 end
 
 (* to expose polymorphic operations *)
@@ -55,18 +59,22 @@ let make_map_ops (type k v t) k_cmp : (k,v,(k,v,t) map)map_ops =
   let find_opt k t = M.find_opt k (from_t t) in
   let disjoint_union t1 t2 = M.disjoint_union (from_t t1) (from_t t2) |> to_t in
   let of_bindings kvs = M.of_bindings kvs |> to_t in
-  { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings }
+  let find_first_opt p t = M.find_first_opt p (from_t t) in
+  let find_last_opt p t = M.find_last_opt p (from_t t) in
+  { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings; find_first_opt; find_last_opt }
   
 
 let _ = make_map_ops
 
 
-(* even more weakly typed *)
+(* weakly typed; pervasives.compare --------------------------------- *)
 
 type ('k,'v) poly_map_2
 
+(* NOTE the following uses polymorphic comparison!!! *)
 let poly_map_ops_2 (type k v) () : (k,v,(k,v) poly_map_2)map_ops =
-  let module M = Make(struct type t = k let compare=Pervasives.compare end) in
+  let k_cmp = Pervasives.compare in
+  let module M = Make(struct type t = k let compare=k_cmp end) in
   let to_t (x:v M.t) : (k,v) poly_map_2 = Obj.magic x in
   let from_t (x:(k,v) poly_map_2) : v M.t = Obj.magic x in
   let empty = M.empty |> to_t in
@@ -83,7 +91,9 @@ let poly_map_ops_2 (type k v) () : (k,v,(k,v) poly_map_2)map_ops =
   let find_opt k t = M.find_opt k (from_t t) in
   let disjoint_union t1 t2 = M.disjoint_union (from_t t1) (from_t t2) |> to_t in
   let of_bindings kvs = M.of_bindings kvs |> to_t in
-  { empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings }
+  let find_first_opt p t = M.find_first_opt p (from_t t) in
+  let find_last_opt p t = M.find_last_opt p (from_t t) in
+  { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings; find_first_opt; find_last_opt }
 
 let empty () = (poly_map_ops_2()).empty
 let is_empty x = (poly_map_ops_2()).is_empty x
@@ -99,3 +109,5 @@ let find k t = (poly_map_ops_2()).find k t
 let find_opt k t = (poly_map_ops_2()).find_opt k t
 let disjoint_union t1 t2 = (poly_map_ops_2()).disjoint_union t1 t2
 let of_bindings kvs = (poly_map_ops_2()).of_bindings kvs
+let find_first_opt t = (poly_map_ops_2()).find_first_opt t
+let find_last_opt t = (poly_map_ops_2()).find_last_opt t
