@@ -213,3 +213,16 @@ let mk_range ~min ~max ~step =
     n:=!n+step
   done;
   List.rev !xs 
+
+
+(* FIXME duplicate of filter_rev_map; this follows JS naming *)
+let rev_filter_map f xs =
+  ([],xs) |> iter_opt (function
+      | _,[] -> None
+      | xs',x::xs -> 
+        f x |> function
+        | None -> Some(xs',xs)
+        | Some y -> Some(y::xs',xs))
+  |> fun (xs',[]) -> xs'
+
+let _ = rev_filter_map
