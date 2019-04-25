@@ -226,3 +226,21 @@ let rev_filter_map f xs =
   |> fun (xs',[]) -> xs'
 
 let _ = rev_filter_map
+
+
+
+(* iterate over a list until the first Some x; return this (or None if no such elt *)
+let iter_till_some (f: 'a -> 'b option) xs =
+  (None,xs) |> iter_opt (fun (ret,xs) ->
+      match ret with 
+      | Some x -> None
+      | None -> (
+          match xs with 
+          | [] -> None
+          | x::xs -> 
+            f x |> function
+            | None -> Some (None,xs)
+            | Some ret -> Some(Some ret,[])))
+  |> function (ret,_) -> ret
+
+let _ : ('a -> 'b option) -> 'a list -> 'b option = iter_till_some
