@@ -19,6 +19,7 @@ type ('k,'v,'t) map_ops = {
   split:'k -> 't -> 't * 'v option * 't;
   find: 'k -> 't -> 'v;
   find_opt: 'k -> 't -> 'v option;
+  update: 'k -> ('v option -> 'v option) -> 't -> 't;
   disjoint_union: 't -> 't -> 't;
   find_first_opt: ('k -> bool) -> 't -> ('k * 'v) option;
   find_last_opt: ('k -> bool) -> 't -> ('k * 'v) option;
@@ -32,7 +33,7 @@ module Make(Ord: Map.OrderedType) = struct
   let of_bindings kvs = 
     kvs |> List.to_seq |> of_seq
   let k_cmp = Ord.compare
-  let map_ops = { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings; find_first_opt; find_last_opt }
+  let map_ops = { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; update; disjoint_union; of_bindings; find_first_opt; find_last_opt }
 end
 
 (* to expose polymorphic operations *)
@@ -57,11 +58,12 @@ let make_map_ops (type k v t) k_cmp : (k,v,(k,v,t) map)map_ops =
   let split k t = M.split k (from_t t) |> fun (t1,k,t2) -> (to_t t1,k,to_t t2) in
   let find k t = M.find k (from_t t) in
   let find_opt k t = M.find_opt k (from_t t) in
+  let update k f t = M.update k f (from_t t) |> to_t in
   let disjoint_union t1 t2 = M.disjoint_union (from_t t1) (from_t t2) |> to_t in
   let of_bindings kvs = M.of_bindings kvs |> to_t in
   let find_first_opt p t = M.find_first_opt p (from_t t) in
   let find_last_opt p t = M.find_last_opt p (from_t t) in
-  { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings; find_first_opt; find_last_opt }
+  { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; update; disjoint_union; of_bindings; find_first_opt; find_last_opt }
   
 
 let _ = make_map_ops
@@ -89,11 +91,12 @@ let poly_map_ops_2 (type k v) () : (k,v,(k,v) poly_map_2)map_ops =
   let split k t = M.split k (from_t t) |> fun (t1,k,t2) -> (to_t t1,k,to_t t2) in
   let find k t = M.find k (from_t t) in
   let find_opt k t = M.find_opt k (from_t t) in
+  let update k f t = M.update k f (from_t t) |> to_t in
   let disjoint_union t1 t2 = M.disjoint_union (from_t t1) (from_t t2) |> to_t in
   let of_bindings kvs = M.of_bindings kvs |> to_t in
   let find_first_opt p t = M.find_first_opt p (from_t t) in
   let find_last_opt p t = M.find_last_opt p (from_t t) in
-  { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; disjoint_union; of_bindings; find_first_opt; find_last_opt }
+  { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings; max_binding_opt; min_binding_opt; split; find; find_opt; update; disjoint_union; of_bindings; find_first_opt; find_last_opt }
 
 let empty () = (poly_map_ops_2()).empty
 let is_empty x = (poly_map_ops_2()).is_empty x
@@ -107,6 +110,7 @@ let min_binding_opt t = (poly_map_ops_2()).min_binding_opt t
 let split k t = (poly_map_ops_2()).split k t
 let find k t = (poly_map_ops_2()).find k t
 let find_opt k t = (poly_map_ops_2()).find_opt k t
+let update k f t = (poly_map_ops_2()).update k f t
 let disjoint_union t1 t2 = (poly_map_ops_2()).disjoint_union t1 t2
 let of_bindings kvs = (poly_map_ops_2()).of_bindings kvs
 let find_first_opt t = (poly_map_ops_2()).find_first_opt t
