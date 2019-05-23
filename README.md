@@ -1,22 +1,29 @@
-# tjr_lib, a simple OCaml utility library
+# tjr_lib_core and tjr_lib: simple OCaml utility libraries
 
-Very simple modules for debugging, files, lists, strings and substrings, trees etc.
+Very simple modules for debugging, files, lists, strings and substrings, trees etc. NOTE there are two libraries: `tjr_lib_core` (for non-Unix stuff) and `tjr_lib` (for stuff that depends on OS facilities).
 
-NOTE there are two libraries: `tjr_lib_core` and `tjr_lib`.
+## Quicklinks
 
-## Building and installing (requires OCaml 4.07 for List.to_seq)
+* OCamldoc is [here](https://tomjridge.github.io/tjr_lib/)
 
-To **build from source**, in this directory type: `make`.  NOTE this requires the dependencies to be manually installed first using opam.
 
-To **install from source using opam**, in this directory, type: `opam pin add tjr_lib .` (NOTE the "." is part of the command.)
 
-To **install from github using opam**, type: 
+## Building and installing 
 
-`opam pin add tjr_lib https://github.com/tomjridge/tjr_lib.git`
+NOTE Building requires OCaml 4.07 for List.to_seq.
+
+
+| Build type                     | Instructions                                                 |
+| ------------------------------ | ------------------------------------------------------------ |
+| build from source              | In this directory type: make.  NOTE this requires the dependencies to be manually installed first using opam. |
+| install from source using opam | In this directory, type: opam pin add tjr_lib . (NOTE the "." is part of the command.) |
+| install from github using opam | Type: opam pin add tjr_lib https://github.com/tomjridge/tjr_lib.git |
+
+
 
 ## Dependencies
 
-Core:
+tjr_lib_core:
 
 | Dependency                  | Comment                                                      |
 | --------------------------- | ------------------------------------------------------------ |
@@ -24,8 +31,9 @@ Core:
 | ppx_deriving_yojson         | tjr_tree pretty-printing; yojson_diff; FIXME consider moving to non-core |
 | ppx_deriving_yojson.runtime | ocamlfind lib installed with ppx_deriving_yojson             |
 | XX ppx_sexp_conv            | tjr_tree pretty-printing (currently commented out)           |
+| base, core_kernel           | no reason not to reuse functionality from these libs if possible |
 
-Non-core:
+tjr_lib:
 
 | Dependency   | Comment                                                      |
 | ------------ | ------------------------------------------------------------ |
@@ -36,12 +44,4 @@ Non-core:
 | XX str       | (not needed anymore?) tjr_file (filename sanitization); doesn't need to be installed via opam? |
 
 
-
-## Tjr_lib_core
-
-![1554818294728](README.assets/1554818294728.png)
-
-## Tjr_lib
-
-![1554818409295](README.assets/1554818409295.png)
 
