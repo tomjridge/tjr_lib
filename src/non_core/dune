@@ -3,4 +3,4 @@
   (flags (:standard -w -27-8-6-40-32-39-33))
   (wrapped false)
   (preprocess (pps ppx_deriving_yojson))
-  (libraries tjr_lib_core bos bos.setup fileutils omd str))
+  (libraries tjr_lib_core extlib bos fileutils omd str))

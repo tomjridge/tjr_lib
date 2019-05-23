@@ -153,4 +153,5 @@ let mk_buf_ops () =
       blit_bigarray ~src:ba ~soff ~len ~dst ~doff;
       ()
   in
-  { create; len=buf_len; resize; to_string; blit_bigarray_to_buf; blit_buf_to_bigarray }
+  { create; len=buf_len; resize; to_string; blit_bigarray_to_buf;
+    blit_buf_to_bigarray }

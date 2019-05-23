@@ -23,6 +23,8 @@ depends: [
   "dune"
   "yojson"
   "ppx_deriving_yojson"
+  "base"
+  "core_kernel"
 ]
 
 # ----------------------------------------------------------------------

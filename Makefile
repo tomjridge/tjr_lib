@@ -7,3 +7,4 @@ default: all
 
 # for auto-completion of Makefile target
 clean::
+
