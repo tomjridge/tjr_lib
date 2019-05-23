@@ -2,7 +2,7 @@
 
 Very simple modules for debugging, files, lists, strings and substrings, trees etc. NOTE there are two libraries: `tjr_lib_core` (for non-Unix stuff) and `tjr_lib` (for stuff that depends on OS facilities).
 
-## Quicklinks
+## Quick links
 
 * OCamldoc is [here](https://tomjridge.github.io/tjr_lib/)
 
