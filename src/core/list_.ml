@@ -17,12 +17,41 @@ let last xs = List.hd (List.rev xs)
 
 let butlast xs = xs|>rev|>tl|>rev
 
+(* from_to ---------------------------------------------------------- *)
+
+
+(* tail recursive *)
+let from_to l h = 
+  let rec f l sofar = 
+    if l>h then List.rev sofar else f (l+1) (l::sofar)
+  in 
+  f l [] 
+
+
+(* FIXME inefficient *)
+let mk_range ~min ~max ~step = 
+  let xs = ref [] in
+  let n = ref min in
+  while !n <= max do
+    xs:=!n::!xs;
+    n:=!n+step
+  done;
+  List.rev !xs 
+
 
 (* split ------------------------------------------------------------ *)
 
 (** cf split_n; prefer list arg last, so can revapply *)
 let split_at i xs = Core_kernel.List.split_n xs i
 
+(* take, drop ------------------------------------------------------- *)
+
+(** NOTE not tail recursive *)
+let rec take n xs = 
+  if n = 0 then [] else List.hd xs :: take (n-1) (List.tl xs)
+
+let rec drop n xs = 
+  if n = 0 then xs else drop (n-1) (List.tl xs)
 
 (* misc ------------------------------------------------------------- *)
 
@@ -154,27 +183,6 @@ let assoc_list_remdups kvs =
   in
   loop ([],[],kvs)
 
-
-(* from_to ---------------------------------------------------------- *)
-
-
-(* tail recursive *)
-let from_to l h = 
-  let rec f l sofar = 
-    if l>h then List.rev sofar else f (l+1) (l::sofar)
-  in 
-  f l [] 
-
-
-(* FIXME inefficient *)
-let mk_range ~min ~max ~step = 
-  let xs = ref [] in
-  let n = ref min in
-  while !n <= max do
-    xs:=!n::!xs;
-    n:=!n+step
-  done;
-  List.rev !xs 
 
 
 (* two lists -------------------------------------------------------- *)
