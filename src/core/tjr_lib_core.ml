@@ -4,13 +4,15 @@
 
 include Util
 
-module Int = Int_
+module Int_ = Int_
 
-module List = List_
+module List_ = List_
 
-module String = String_
+module String_ = String_
 
 (** {2 Extras} *)
+
+module Poly_map = Poly_map
 
 module Exhaustive_testing = Exhaustive_testing
 

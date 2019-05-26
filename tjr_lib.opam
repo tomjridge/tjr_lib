@@ -12,7 +12,7 @@ maintainer   : "Tom Ridge <tom.j.ridge@googlemail.com>"
 authors      : "Tom Ridge <tom.j.ridge@googlemail.com>"
 homepage     : "https://github.com/tomjridge/tjr_lib"
 bug-reports  : "https://github.com/tomjridge/tjr_lib/issues"
-dev-repo     : "https://github.com/tomjridge/tjr_lib.git"
+dev-repo     : "git://github.com/tomjridge/tjr_lib.git"
 
 # ----------------------------------------------------------------------
 

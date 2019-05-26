@@ -1,6 +1,6 @@
 (library
   (public_name tjr_lib)
-  (flags (:standard -w -27-8-6-40-32-39-33))
-  (wrapped false)
+  (flags (:standard -w -27-8-6-40-32-39-33 -open Tjr_lib_core))
+;  (wrapped false)
   (preprocess (pps ppx_deriving_yojson))
   (libraries tjr_lib_core extlib bos fileutils omd str))
