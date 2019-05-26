@@ -1,6 +1,6 @@
-opam-version: "1.2"
-name: "tjr_lib"
-version: "0.0.1" # this should match the VERSION file
+opam-version : "2.0"
+name         : "tjr_lib"
+version      : "0.0.1" # this should match the VERSION file
 
 # ----------------------------------------------------------------------
 # FIXME at the moment we have two ocamlfind packages and one opam
@@ -8,11 +8,11 @@ version: "0.0.1" # this should match the VERSION file
 
 # FIXME opam doesn't like comments at end of file?
 
-maintainer: "Tom Ridge <tom.j.ridge@googlemail.com>"
-authors: "Tom Ridge <tom.j.ridge@googlemail.com>"
-homepage: "https://github.com/tomjridge/tjr_lib"
-bug-reports: "https://github.com/tomjridge/tjr_lib/issues"
-dev-repo: "https://github.com/tomjridge/tjr_lib.git"
+maintainer   : "Tom Ridge <tom.j.ridge@googlemail.com>"
+authors      : "Tom Ridge <tom.j.ridge@googlemail.com>"
+homepage     : "https://github.com/tomjridge/tjr_lib"
+bug-reports  : "https://github.com/tomjridge/tjr_lib/issues"
+dev-repo     : "https://github.com/tomjridge/tjr_lib.git"
 
 # ----------------------------------------------------------------------
 

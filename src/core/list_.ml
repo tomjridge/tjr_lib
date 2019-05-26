@@ -1,4 +1,4 @@
-(** Extra list functions; see also {Core_kernel.List} *)
+(** Extra list functions; see also {!Core_kernel.List} *)
 
 include List
 

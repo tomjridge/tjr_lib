@@ -1,7 +1,11 @@
+(** {2 Core} *)
+
 include Tjr_lib_core
 
 (* to develop interactively, use: (merlin-use "bos.setup") in emacs
    interactively *)
+
+(** {2 Non-core} *)
 
 module Tjr_buffer = Tjr_buffer
 
@@ -17,7 +21,7 @@ module Internal_cmd = struct
 
   (** Run a command, and expect an Ok *)
   let shell_command_to_unit s = 
-    of_string {|asciidoctor -s-o /tmp/tmp.html /tmp/tmp.adoc|} |> dest_Ok
+    of_string s |> dest_Ok
     |> run |> dest_Ok;
 end
 let shell_command_to_unit = Internal_cmd.shell_command_to_unit
