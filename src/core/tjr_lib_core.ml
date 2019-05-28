@@ -12,7 +12,7 @@ module String_ = String_
 
 (** {2 Extras} *)
 
-module Poly_map = Poly_map
+module Tjr_map = Tjr_map
 
 module Exhaustive_testing = Exhaustive_testing
 
@@ -20,7 +20,7 @@ module Gensym = Gensym
 
 module Global = Global
 
-module Store = Store
+module Tjr_store = Tjr_store
 
 
 (** {2 Logging and test control} *)
@@ -32,3 +32,8 @@ module Log = Log
 module Test = Test
 
 
+(** {2 Misc} *)
+
+module Map_int = Map.Make(struct type t = int let compare: t -> t -> int = Pervasives.compare end)
+
+module Map_string = Map.Make(struct type t = string let compare: t -> t -> int = Pervasives.compare end)
