@@ -22,6 +22,7 @@ module Global = Global
 
 module Tjr_store = Tjr_store
 
+module Init_ref = Init_ref
 
 (** {2 Logging and test control} *)
 
