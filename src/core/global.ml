@@ -2,7 +2,10 @@
 
 (** This flag, if true, forces names of global vars to be printed when
    registered *)
-let debug_global = ref true
+let debug_global = ref Sys.(getenv_opt "TJR_DEBUG_GLOBAL" |> function
+  | None -> false
+  | Some "false" -> false
+  | _ -> true)
 
 module Internal = struct
 

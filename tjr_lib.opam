@@ -23,6 +23,7 @@ depends: [
   "ocamlfind"
   "dune"
   "bos"
+  "extlib"
   "fileutils"
   "omd"
   "tjr_lib_core"
