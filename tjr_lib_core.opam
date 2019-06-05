@@ -1,6 +1,7 @@
 opam-version : "2.0"
 name         : "tjr_lib_core"
 version      : "0.0.1" # this should match the VERSION file
+synopsis     : "Small OCaml lib"
 
 # ----------------------------------------------------------------------
 # FIXME at the moment we have two ocamlfind packages and one opam
@@ -12,7 +13,7 @@ maintainer   : "Tom Ridge <tom.j.ridge@googlemail.com>"
 authors      : "Tom Ridge <tom.j.ridge@googlemail.com>"
 homepage     : "https://github.com/tomjridge/tjr_lib"
 bug-reports  : "https://github.com/tomjridge/tjr_lib/issues"
-dev-repo     : "https://github.com/tomjridge/tjr_lib.git"
+dev-repo     : "git+https://github.com/tomjridge/tjr_lib.git"
 
 # ----------------------------------------------------------------------
 
