@@ -131,6 +131,133 @@ end
 
 module With_base = struct
 
+  (** A first-order approach *)
+
+  (** Common *)
+  module type Map1 = sig
+    type k
+    type v
+    type t
+    val k_cmp       : k -> k -> int
+    val empty       : t
+    val is_empty    : t -> bool
+    val mem         : k -> t -> bool
+    val add         : k -> v -> t -> t
+    val remove      : k -> t -> t
+    val cardinal    : t -> int
+    val bindings    : t -> (k*v) list
+    val of_bindings : (k*v) list -> t  (* FIXE allow duplicates? *)
+    val find        : k -> t -> v
+    val find_opt    : k -> t -> v option
+  end
+
+  (** Less common *)
+  module type Map2 = sig
+    include Map1
+    val max_binding_opt: t -> (k*v)option
+    val min_binding_opt: t -> (k*v)option
+    val split:k -> t -> t * v option * t
+    val update: k -> (v option -> v option) -> t -> t
+    val disjoint_union: t -> t -> t
+    (* val get_next_binding: k -> t -> (k*v)option *)
+    (* val get_prev_binding: k -> t -> (k*v)option *)
+    val closest_key: 
+      [ `Greater_or_equal_to | `Greater_than | `Less_or_equal_to 
+      | `Less_than ] -> 
+      k -> t -> (k*v)option
+  end
+
+  open Base.Map
+
+  (* this is the general type; the function below makes a particular
+     implementation using Base.Map.t *)
+  type ('k,'v,'t) map_ops = 
+    (module Map2 with
+      type k = 'k and type t = 't and type v = 'v)
+
+
+  let make_map_ops (type k v cmp) (cmp:(k,cmp)comparator) : (k,v,(k,v,cmp)Base.Map.t)map_ops = 
+    let module A = struct
+
+      type nonrec k = k
+      type nonrec v = v
+
+      type t = (k,v,cmp) Base.Map.t
+   
+      let k_cmp = 
+        let module S = (val cmp) in
+        S.comparator.compare
+          
+      let _ = k_cmp
+      
+      let empty = empty cmp
+          
+      let is_empty = is_empty
+
+      let mem x s = mem s x
+
+      let add k v s = set s ~key:k ~data:v
+          
+      let remove k s = remove s k
+
+      let cardinal s = length s
+
+      let bindings s = to_alist s
+
+      (** FIXME NOTE we throw an exception if there are duplicate elts *)
+      let of_bindings kvs = of_alist_exn cmp kvs
+
+      let find k t = find_exn t k
+
+      let find_opt k t = Base.Map.find t k
+
+      let max_binding_opt s = max_elt s
+
+      let min_binding_opt s = min_elt s
+
+      let split k t = 
+        Base.Map.split t k |> fun (t1,kv,t2) -> 
+        match kv with
+        | None -> (t1,None,t2)
+        | Some(k,v) -> (t1,Some v,t2)
+
+      let update k f t =
+        change t k ~f
+          
+      let disjoint_union t1 t2 =
+        merge t1 t2 ~f:(fun ~key vs ->
+            match vs with
+            | `Left v1 -> Some v1
+            | `Right v2 -> Some v2
+            | `Both (v1,v2) -> failwith __LOC__)
+
+(*
+      let get_next_binding k t = failwith""
+      let get_prev_binding k t = failwith""
+*)
+      let closest_key x k t = closest_key t x k
+
+    end
+    in
+    (module A : Map2 with type k=k and type v=v and type t=(k,v,cmp) Base.Map.t)
+
+  let _ = make_map_ops
+
+end    
+
+
+
+
+(*
+    let open A in
+    { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings;
+    max_binding_opt; min_binding_opt; split; find; find_opt; update;
+    disjoint_union; of_bindings }
+*)
+
+
+
+(*
   type ('k,'v,'t) map_ops = {
     k_cmp: 'k -> 'k -> int;
     empty: 't;
@@ -148,65 +275,9 @@ module With_base = struct
     find_opt: 'k -> 't -> 'v option;
     update: 'k -> ('v option -> 'v option) -> 't -> 't;
     disjoint_union: 't -> 't -> 't;
+    get_next_binding: 'k -> 't -> ('k*'v)option;
+    get_prev_binding: 'k -> 't -> ('k*'v)option;
     (* find_first_opt: ('k -> bool) -> 't -> ('k * 'v) option; *)
     (* find_last_opt: ('k -> bool) -> 't -> ('k * 'v) option; *)
   }
-
-  open Base.Map
-
-  let make_map_ops (type k cmp) (cmp:(k,cmp)comparator) = 
-    let module A = struct
-      let k_cmp = 
-        let module S = (val cmp) in
-        S.comparator.compare
-          
-      let _ = k_cmp
-
-      let empty = empty cmp
-
-      let mem x s = mem s x
-
-      let add k v s = set s ~key:k ~data:v
-          
-      let remove k s = remove s k
-
-      let cardinal s = length s
-
-      let bindings s = to_alist s
-
-      let max_binding_opt s = max_elt s
-
-      let min_binding_opt s = min_elt s
-
-      let split k t = 
-        split t k |> fun (t1,kv,t2) -> 
-        match kv  with
-        | None -> (t1,None,t2)
-        | Some(k,v) -> (t1,Some k,t2)
-
-      let find k t = find_exn t k
-
-      let find_opt k t = Base.Map.find t k
-
-      let update k f t =
-        change t k ~f
-          
-      let disjoint_union t1 t2 =
-        merge t1 t2 ~f:(fun ~key vs ->
-            match vs with
-            | `Left v1 -> Some v1
-            | `Right v2 -> Some v2
-            | `Both (v1,v2) -> failwith __LOC__)
-
-      (** FIXME NOTE we throw an exception if there are duplicate elts *)
-      let of_bindings kvs = of_alist_exn cmp kvs
-
-    end
-    in
-    let open A in
-    { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings;
-    max_binding_opt; min_binding_opt; split; find; find_opt; update;
-    disjoint_union; of_bindings }
-
-
-end    
+*)
