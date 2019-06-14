@@ -246,6 +246,56 @@ module With_base = struct
 end    
 
 
+module With_base_as_record = struct
+
+  module Map_ops_type = struct
+    type ('k,'v,'t) map_ops = {
+      k_cmp: 'k -> 'k -> int;
+      empty: 't;
+      is_empty:'t -> bool;
+      mem:'k -> 't -> bool;
+      add:'k -> 'v -> 't -> 't;
+      remove:'k -> 't -> 't;
+      cardinal: 't -> int;
+      bindings: 't -> ('k*'v) list;
+      of_bindings: ('k*'v) list -> 't;  (* FIXE allow duplicates? *)
+      find: 'k -> 't -> 'v;
+      find_opt: 'k -> 't -> 'v option;
+      max_binding_opt: 't -> ('k*'v)option;
+      min_binding_opt: 't -> ('k*'v)option;
+      split:'k -> 't -> 't * 'v option * 't;
+      update: 'k -> ('v option -> 'v option) -> 't -> 't;
+      disjoint_union: 't -> 't -> 't;
+      (* get_next_binding: 'k -> 't -> ('k*'v)option; *)
+      (* get_prev_binding: 'k -> 't -> ('k*'v)option; *)
+      (* find_first_opt: ('k -> bool) -> 't -> ('k * 'v) option; *)
+      (* find_last_opt: ('k -> bool) -> 't -> ('k * 'v) option; *)
+      closest_key: 
+        [ `Greater_or_equal_to | `Greater_than | `Less_or_equal_to 
+        | `Less_than ] -> 
+        'k -> 't -> ('k*'v)option
+    }
+  end
+  include Map_ops_type
+
+  open With_base 
+
+  let make_map_ops (type k v cmp) (cmp:(k,cmp)Base.Map.comparator) = 
+    let m : (module Map2 with type k=k and type v=v and type t = (k, v, cmp) Base.Map.t) = With_base.make_map_ops cmp in
+    let (module M) = m in
+    let open M in
+    { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings; of_bindings;
+      find; find_opt; max_binding_opt; min_binding_opt; split; update; disjoint_union;
+      closest_key }
+
+  let _ = make_map_ops
+    
+  
+
+end
+
+
+
 
 
 (*
