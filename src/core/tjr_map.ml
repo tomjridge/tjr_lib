@@ -22,6 +22,8 @@ type ('k,'v,'t) map_ops = {
   disjoint_union: 't -> 't -> 't;
   find_first_opt: ('k -> bool) -> 't -> ('k * 'v) option;
   find_last_opt: ('k -> bool) -> 't -> ('k * 'v) option;
+  iter: ('k -> 'v -> unit) -> 't -> unit;
+  map: ('v -> 'v) -> 't -> 't;  (* NOTE less general than stdlib *)
 }
 
 (** Functor to make map ops; generates a new impl type 't *)
@@ -36,7 +38,7 @@ module Make_map_ops(Ord: Map.OrderedType) = struct
   let map_ops = { 
     k_cmp; empty; is_empty; mem; add; remove; cardinal;
     bindings; max_binding_opt; min_binding_opt; split; find; find_opt;
-    update; disjoint_union; of_bindings; find_first_opt; find_last_opt }
+    update; disjoint_union; of_bindings; find_first_opt; find_last_opt; iter; map }
 end
 
 (** To avoid functors, we introduce a phantom type for a default
@@ -68,9 +70,11 @@ let make_map_ops (type k v t) k_cmp : (k,v,(k,v,t) map)map_ops =
   let of_bindings kvs = M.of_bindings kvs |> to_t in
   let find_first_opt p t = M.find_first_opt p (from_t t) in
   let find_last_opt p t = M.find_last_opt p (from_t t) in
+  let iter f t = M.iter f (from_t t) in
+  let map f t = M.map f (from_t t) |> to_t in
   { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings;
     max_binding_opt; min_binding_opt; split; find; find_opt; update;
-    disjoint_union; of_bindings; find_first_opt; find_last_opt }
+    disjoint_union; of_bindings; find_first_opt; find_last_opt; iter; map }
   
 
 let _ = make_map_ops
@@ -105,9 +109,11 @@ module With_pervasives_compare = struct
     let of_bindings kvs = M.of_bindings kvs |> to_t in
     let find_first_opt p t = M.find_first_opt p (from_t t) in
     let find_last_opt p t = M.find_last_opt p (from_t t) in
+    let iter f t = M.iter f (from_t t) in
+    let map f t = M.map f (from_t t) |> to_t in
     { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings;
       max_binding_opt; min_binding_opt; split; find; find_opt; update;
-      disjoint_union; of_bindings; find_first_opt; find_last_opt }
+      disjoint_union; of_bindings; find_first_opt; find_last_opt; iter; map }
 
   let empty () = (poly_map_ops_2()).empty
   let is_empty x = (poly_map_ops_2()).is_empty x
@@ -126,6 +132,8 @@ module With_pervasives_compare = struct
   let of_bindings kvs = (poly_map_ops_2()).of_bindings kvs
   let find_first_opt t = (poly_map_ops_2()).find_first_opt t
   let find_last_opt t = (poly_map_ops_2()).find_last_opt t
+  let iter f t = (poly_map_ops_2()).iter f t
+  let map f t = (poly_map_ops_2()).map f t
 end
 
 
