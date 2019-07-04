@@ -11,6 +11,14 @@ let iter_opt (f:'a -> 'a option) =
   in
   fun x -> loop x
 
+(** Iterate until reach break *)
+let rec iter_break (f:'a -> [ `Break of 'b | `Continue of 'a ]) (x:'a) = 
+  f x |> function
+  | `Break b -> b
+  | `Continue a -> iter_break f a
+
+  
+
 (* last, butlast ---------------------------------------------------- *)
 
 let last xs = List.hd (List.rev xs)
