@@ -32,9 +32,3 @@ module Log = Log
 
 module Test = Test
 
-
-(** {2 Misc} *)
-
-module Map_int = Map.Make(struct type t = int let compare: t -> t -> int = Pervasives.compare end)
-
-module Map_string = Map.Make(struct type t = string let compare: t -> t -> int = Pervasives.compare end)
