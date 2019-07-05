@@ -21,8 +21,9 @@ module Gensym = Gensym
 module Global = Global
 
 module Tjr_store = Tjr_store
+type fstore = Tjr_store.fstore (* available after open Tjr_lib_core *)
 
-module Init_ref = Init_ref
+(* module Init_ref = Init_ref *)
 
 (** {2 Logging and test control} *)
 

@@ -11,22 +11,28 @@ module Internal = struct
   type univ
 
   (* map to option - we might have uninitialized refs; we also have a
-     "read_only" flag, which prevents further modification *)
-  type fstore = { map: univ Map_int.t; free: int; urefs:(int*string) list; read_only:bool }
+     "read_only" flag, which prevents further modification;
+     allow_reset flags whether we can set the value more than once
+     (including the initial creation) *)
+  type fstore = { 
+    map: univ Map_int.t; free: int; urefs:(int*string) list; 
+    read_only:bool; allow_reset:bool }
 
   type 'a m = fstore -> 'a * fstore
 
-
   type 'a ref_ = int
 
-  let empty_fstore = { map=Map_int.empty; free=0; urefs=[]; read_only=false }
+  let empty_fstore ?(allow_reset=false) () = 
+    { map=Map_int.empty; free=0; urefs=[]; read_only=false; allow_reset }
 
   let fail_if_ro t = 
     match t.read_only with 
     | true -> failwith (
-      Printf.sprintf "%s: attempt to modify store, but store is read-only" __LOC__)
+      Printf.sprintf "attempt to modify store, but store is read-only\n%s" __LOC__)
     | false -> ()
-    
+
+
+  let set_read_only t = {t with read_only=true}
                     
   let mk_ref: 'a. 'a -> 'a ref_ m = 
     fun x t -> 
@@ -37,9 +43,19 @@ module Internal = struct
     (r,{t with map;free})
 
 
+  let is_set: 'a. 'a ref_ -> fstore -> bool = 
+    fun r s -> 
+    Map_int.mem r s.map 
+
+  let fail_if_set r t = 
+    if is_set r t then 
+      failwith (Printf.sprintf "reference is already set and store doesn't allow re-set\n%s" __LOC__)
+    else ()
+
   let set: 'a. 'a ref_ -> 'a -> unit m = 
     fun r x t ->
     fail_if_ro t;
+    if not t.allow_reset then fail_if_set r t;
     let x' : univ = Obj.magic x in
     let map = Map_int.add r x' t.map in
     ((),{t with map})
@@ -67,10 +83,7 @@ module Internal = struct
       let free = r+1 in
       (r,{t with free;urefs=(r,name)::t.urefs})
 
-    let uref_initialized u t = 
-      Map_int.find_opt u t.map |> function
-      | None -> false
-      | Some _ -> true
+    let uref_initialized u t = Map_int.mem u t.map
 
     (** Check that all urefs have been initialized *)
     let urefs_status t = 
@@ -102,7 +115,13 @@ end
 module With_sig : sig
   type fstore 
   type 'a ref_ 
-  val empty_fstore : fstore
+
+  (** allow_reset means that a ref can be set more than once (including the initialization *)
+  val empty_fstore : ?allow_reset:bool -> unit -> fstore
+
+  (** if this flag is set, then set will throw an exception *)
+  val set_read_only : fstore -> fstore
+
   val mk_ref : 'a -> fstore -> 'a ref_ * fstore
   val set : 'a ref_ -> 'a -> fstore -> fstore
   val get : 'a ref_ -> fstore -> 'a
@@ -145,9 +164,10 @@ let uref_ops = { mk_uref; urefs_status; uref_initialized; urefs_initialized }
 
 
 (** An imperative version; the functional store can be accessed via a normal ocaml reference *)
-module Make_imperative_fstore() = struct
+module Make_imperative_fstore(S:sig val allow_reset: bool end) = struct
+  open S
 
-  let fstore = ref empty_fstore
+  let fstore = ref (empty_fstore ~allow_reset ())
 
   let ref x = 
     mk_ref x !fstore |> (fun (r,s) -> 
