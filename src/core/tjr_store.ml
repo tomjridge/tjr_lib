@@ -125,7 +125,7 @@ module With_sig : sig
   val mk_ref : 'a -> fstore -> 'a ref_ * fstore
   val set : 'a ref_ -> 'a -> fstore -> fstore
   val get : 'a ref_ -> fstore -> 'a
-  val mk_uref : name:string -> fstore -> int * fstore
+  val mk_uref : name:string -> fstore -> 'a ref_ * fstore
   val uref_initialized : 'a ref_ -> fstore -> bool
   val urefs_status : fstore -> (string * bool) list
   val urefs_initialized : print:bool -> fstore -> bool

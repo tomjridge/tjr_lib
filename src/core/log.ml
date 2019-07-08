@@ -15,7 +15,7 @@ type log_ops = {
 
   log_now: string -> unit;  (* print immediately, but also log *)
   log_n: int ref;
-  jlog:Yojson.Safe.json -> unit;
+  jlog:Yojson.Safe.t -> unit;
   print_last_n: unit -> unit;
   (* with_log: 'a 'b. ('a -> 'b) -> 'a -> 'b; *)
 }

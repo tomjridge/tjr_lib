@@ -180,3 +180,57 @@ let explode s =
 let implode s = 
   let s = Bytes.init (List.length s) (List.nth s) in
   Bytes.unsafe_to_string s
+
+
+
+let pad_to ?(trim=true) n s = 
+  let l = String.length s in
+  match Pervasives.compare l n with
+  | 0 -> s
+  | x when x < 0 -> (* l < n; pad *)
+    s^(String.make (n-l) ' ')
+  | _ -> (* l > n; maybe trim *)
+    (if trim then String.sub s 0 n else s)
+
+
+(** Formatting of a table (a list of string list). By default, this
+   uses "|" as a separator, and examines all lines before computing
+   the pad *)
+let pp_csv' ?(sep="|") csv = 
+  (* the max length of each col *)
+  let tbl = Hashtbl.create 100 in
+  csv |> List.iter (fun row -> 
+      row |> List.iteri (fun col s -> 
+          Hashtbl.find_opt tbl col |> function
+            | None -> Hashtbl.replace tbl col (String.length s)
+            | Some i -> Hashtbl.replace tbl col (max (String.length s) i)));
+  csv |> List.map (fun row -> 
+      row |> List.mapi (fun col s -> 
+          Hashtbl.find tbl col |> fun n -> 
+          s |> pad_to n))
+
+let pp_csv ?(sep="|") ?(frame=true) csv = 
+  csv |> pp_csv' ~sep |> fun csv -> 
+  csv |> List.iter (fun row -> 
+      row |> String.concat " | " |> fun s -> 
+      if frame then Printf.printf "%s %s %s\n" sep s sep
+      else Printf.printf "%s\n" s)
+
+let test_pp_csv () = 
+begin {|
+  Total time | wp1 | wp2 |    count | Unit cost 
+     6570052 | l2d:aa | l2d:ab |     4633 |      1418 
+  6377142418 | l2d:ab | l2d:aa |     4632 |   1376757 
+
+
+  Total time | wp1 | wp2 |    count | Unit cost 
+    41814336 | dmap:l2d.deq2 | dmap:loop_evictees |     4632 |      9027 
+  1965058715 | dmap:loop_evictees | dmap:l2d.deq1 |     4632 |    424235 
+  4380197253 | dmap:l2d.deq1 | dmap:l2d.deq2 |     4633 |    945434 |}
+|> split_on_all ~sub:"\n"
+|> List.map (split_on_all ~sub:"|")
+end
+|> pp_csv
+  
+
+  
