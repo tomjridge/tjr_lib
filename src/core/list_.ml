@@ -2,57 +2,48 @@
 
 include List
 
-(** favourite iteraction operator *)
-let iter_opt (f:'a -> 'a option) = 
-  let rec loop x = 
-    match f x with
-    | None -> x
-    | Some x -> loop x
-  in
-  fun x -> loop x
 
-(** Iterate until reach break *)
-let rec iter_break (f:'a -> [ `Break of 'b | `Continue of 'a ]) (x:'a) = 
-  f x |> function
-  | `Break b -> b
-  | `Continue a -> iter_break f a
-
-  
-
-(* last, butlast ---------------------------------------------------- *)
+(** {2 last, butlast } *)
 
 let last xs = List.hd (List.rev xs)
 
-let butlast xs = xs|>rev|>tl|>rev
+let rev_butlast xs = xs |> rev |> tl
 
-(* from_to ---------------------------------------------------------- *)
+let butlast xs = rev_butlast xs |> rev
 
 
-(* tail recursive *)
+(** {2 List creation: from_to, map_range etc} *)
+
+(** tail recursive [l..h-1] *)
 let from_to l h = 
   let rec f l sofar = 
-    if l>h then List.rev sofar else f (l+1) (l::sofar)
+    if l>=h then List.rev sofar else f (l+1) (l::sofar)
   in 
   f l [] 
 
 
-(* FIXME inefficient *)
+(** f l .. f (h-1) *)
+let rec map_range ~f l h = 
+  if l >= h then [] else (f l)::(map_range ~f (l+1) h)
+
+(** min, min+step, ... max-1  FIXME inefficient;  *)
 let mk_range ~min ~max ~step = 
   let xs = ref [] in
   let n = ref min in
-  while !n <= max do
+  while !n < max do
     xs:=!n::!xs;
     n:=!n+step
   done;
   List.rev !xs 
 
 
-(* split ------------------------------------------------------------ *)
+(** {2 Splitting} *)
 
 (** cf split_n; prefer list arg last, so can revapply *)
 let split_at i xs = Core_kernel.List.split_n xs i
 
-(* take, drop ------------------------------------------------------- *)
+
+(** {2 Take and drop} *)
 
 (** NOTE not tail recursive *)
 let rec take n xs = 
@@ -61,13 +52,15 @@ let rec take n xs =
 let rec drop n xs = 
   if n = 0 then xs else drop (n-1) (List.tl xs)
 
-(* misc ------------------------------------------------------------- *)
+
+(** {2 Misc} *)
 
 (** concat_with f [b1; b2; ...] is ...(f (f b1 b2) b3) *)
 let concat_with : ('a -> 'b -> 'a) -> 'b list -> 'a = 
   fun f xs -> 
   match xs with
     x::xs -> List.fold_left f x xs
+
 
 
 (* FIXME uncomment any of these that are still relevant 

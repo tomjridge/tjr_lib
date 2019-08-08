@@ -8,6 +8,9 @@ module Int_ = Int_
 
 module List_ = List_
 
+module Iter = Iter
+include Iter
+
 module String_ = String_
 
 (** {2 Extras} *)
