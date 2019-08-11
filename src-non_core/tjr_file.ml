@@ -169,13 +169,17 @@ include Internal
 
 module Extra = struct
 
-  let equal_file path1 path2 =
+  let equal_file' path1 path2 =
     let s1 = Unix.stat path1 in
     let s2 = Unix.stat path2 in
     let uniq_id s = Unix.(s.st_dev,s.st_ino) in (* POSIX: unique per dev / filesystem *)
     (uniq_id s1 = uniq_id s2, (s1, s2)) (* return the stats as well, just in case useful *)
     
+  let equal_file p1 p2 = equal_file' p1 p2 |> fst
+
   let is_root path = equal_file path (path / "..")
+
+  let find_file_cwd_to_root ~fn = ()
   
 end
 
@@ -184,4 +188,5 @@ module Export = struct
   include File_read_write
   include Filenames.Export
   include Commands
+  let equal_file,is_root = Extra.(equal_file,is_root)
 end

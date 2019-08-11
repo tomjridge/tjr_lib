@@ -1,11 +1,20 @@
 # tjr_lib_core and tjr_lib: simple OCaml utility libraries
 
-Very simple modules for debugging, files, lists, strings and substrings, trees etc. NOTE there are two libraries: `tjr_lib_core` (for non-Unix stuff) and `tjr_lib` (for stuff that depends on OS facilities).
+Very simple modules for debugging, files, lists, strings and
+substrings, trees etc. NOTE there are two libraries: `tjr_lib_core`
+(for non-Unix stuff) and `tjr_lib` (for stuff that depends on OS
+facilities).
 
 ## Quick links
 
 * OCamldoc is [here](https://tomjridge.github.io/tjr_lib/)
 
+
+## Core vs non-core
+
+Core is for pure-ocaml stuff. non_core is for stuff that depends on
+system-provided functionality (files etc). FIXME at the moment, core
+depends on json, which involves files etc
 
 
 ## Building and installing 
