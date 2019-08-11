@@ -9,6 +9,17 @@ open String_
 (** f-or-d-or-symlink-or-other *)
 type fds_t = F | D | S | O 
 
+module Slash_operator = struct
+  let slash = "/"
+
+  (** Combines p1 and p2; if p1 doesn't end with a slash, and p2 doesn't start with a slash, it is added *)
+  let ( / ) p1 p2 = 
+    match String_.ends_with ~suffix:slash p1 || String_.starts_with ~prefix:slash p2 with
+    | true -> p1^p2
+    | false -> p1^slash^p2
+end
+open Slash_operator
+
 
 (** {2 File input and output} *)
 
@@ -153,6 +164,20 @@ module Internal = struct
 end
 
 include Internal
+
+(** {2 Extra/derived operations} *)
+
+module Extra = struct
+
+  let equal_file path1 path2 =
+    let s1 = Unix.stat path1 in
+    let s2 = Unix.stat path2 in
+    let uniq_id s = Unix.(s.st_dev,s.st_ino) in (* POSIX: unique per dev / filesystem *)
+    (uniq_id s1 = uniq_id s2, (s1, s2)) (* return the stats as well, just in case useful *)
+    
+  let is_root path = equal_file path (path / "..")
+  
+end
 
 
 module Export = struct
