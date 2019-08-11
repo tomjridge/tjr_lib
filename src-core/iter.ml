@@ -16,4 +16,12 @@ let rec iter_break f (x:'a) =
   | Break b -> b
   | Cont a -> iter_break f a
 
+(** Essentially the Y combinator; useful for anonymous recursive functions *)
+let iter_k f (x:'a) =
+  let rec k x = f ~k x in
+  k x
+
+let _ 
+: (k:('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
+= iter_k
   
