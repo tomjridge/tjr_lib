@@ -179,7 +179,15 @@ module Extra = struct
 
   let is_root path = equal_file path (path / "..")
 
-  let find_file_cwd_to_root ~fn = ()
+  (** Return an option, Some realpath or None *)
+  let find_file_cwd_to_root ~fn = 
+    "." |> iter_break (fun p -> 
+        match filename_exists (p / fn) with
+        | true -> Break(Some (ExtUnix.Specific.realpath (p / fn)))
+        | false -> 
+          match is_root p with
+          | true -> Break None
+          | false -> Cont (p / ".."))
   
 end
 
@@ -188,5 +196,6 @@ module Export = struct
   include File_read_write
   include Filenames.Export
   include Commands
-  let equal_file,is_root = Extra.(equal_file,is_root)
+  let equal_file,is_root,find_file_cwd_to_root = 
+    Extra.(equal_file,is_root,find_file_cwd_to_root)
 end

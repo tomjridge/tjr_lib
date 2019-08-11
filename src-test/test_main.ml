@@ -16,3 +16,8 @@ let _ =
     
   
   
+let _ = 
+  let fn = ".bashrc" in
+  find_file_cwd_to_root ~fn |> function
+  | None -> Printf.printf "%s not found\n" fn
+  | Some p -> Printf.printf "%s found at %s\n" fn p
