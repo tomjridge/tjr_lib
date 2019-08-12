@@ -37,8 +37,9 @@ let _ =
     make_cmd
       ~usage:"test args parser" 
       ~flags:[
-        (string_flag ~name:"--xx" (fun s -> print_endline "xx"; xx:=s));
-        (int_flag ~name:"--yy" (fun s -> print_endline "yy"; yy:=s));]
+        string_flag ~name:"--xx" (fun s -> print_endline "xx"; xx:=s);
+        int_flag ~name:"--yy" (fun s -> print_endline "yy"; yy:=s)
+      ]
       ~subcmds:[
         make_subcmd 
           ~name:"build"
