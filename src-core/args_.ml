@@ -54,11 +54,15 @@ module Internal_string = struct
 
   let starts_with_double_dash s = String_.starts_with ~prefix:"--" s
 
+  let starts_with_single_dash s = String_.starts_with ~prefix:"-" s
+
+(*
   let drop_double_dash s = 
     assert(starts_with_double_dash s);
     String_.drop 2 s
+*)
 
-  let is_flag s = starts_with_double_dash s
+  let is_flag s = starts_with_single_dash s
 end
 open Internal_string
 
@@ -107,12 +111,14 @@ module Common_flags = struct
     extra=()
   }
 
+(*
   (** if flag parsing fails, use the default *)
   let flag_with_default default f = {
     name=f.name;
     parse=(fun xs -> try f.parse xs with _ -> f.extra default);
     extra=()
   }
+*)
 end
 include Common_flags
   
@@ -126,8 +132,7 @@ module Internal_flags = struct
         | x::xs -> 
           match is_flag x with
           | true -> (
-              x |> drop_double_dash |> fun f -> 
-              Hashtbl.find_opt flags f |> function
+              Hashtbl.find_opt flags x |> function
               | None -> 
                 Printf.sprintf 
                   "parse_flags: failed to find parser for: %s\n" x

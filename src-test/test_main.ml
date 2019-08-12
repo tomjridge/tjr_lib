@@ -37,14 +37,19 @@ let _ =
     make_cmd
       ~usage:"test args parser" 
       ~flags:[
-        (string_flag ~name:"xx" (fun s -> print_endline "xx"; xx:=s));
-        (int_flag ~name:"yy" (fun s -> print_endline "yy"; yy:=s));]
+        (string_flag ~name:"--xx" (fun s -> print_endline "xx"; xx:=s));
+        (int_flag ~name:"--yy" (fun s -> print_endline "yy"; yy:=s));]
       ~subcmds:[
         make_subcmd 
           ~name:"build"
           ~set:(fun () -> subcmd:="build")
-          ~flags:(make_flag_set [
-              int_flag ~name:"zz" (fun i -> print_endline "zz"; zz:=i)]);
+          ~flags:(
+            let zz_ = (fun i -> print_endline "zz"; zz:=i) in
+            make_flag_set [
+              (* --zz and -z are aliases *)
+              int_flag ~name:"--zz" zz_;
+              int_flag ~name:"-z" zz_
+            ]);
         make_subcmd
           ~name:"clean"
           ~set:(fun () -> subcmd:="clean")
@@ -52,7 +57,7 @@ let _ =
       ]
   in
   let _ = 
-    "--xx 2 --yy 10 clean zz 2 filename" 
+    "--xx 2 --yy 10 build -z 2 filename" 
     |> String_.split_on_char ' '
     |> cmd_parser cmd 
     |> fun xs -> rest:=xs
