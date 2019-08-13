@@ -4,7 +4,7 @@ scratch:=/tmp/l/github/scratch
 default: all
 
 all::
-	dune build --only-packages=tjr_lib
+	dune build --only-packages=tjr_lib_core,tjr_lib
 	dune build src-test/test_main.exe
 
 run_test:
