@@ -24,7 +24,7 @@ depends: [
   "ocamlfind"
   "dune"
   "bos"
-  "extlib"
+  "extlib" "extunix"
   "fileutils"
   "omd"
   "tjr_lib_core"
