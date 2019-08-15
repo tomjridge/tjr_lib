@@ -128,7 +128,7 @@ module Commands = struct
 
   let cd = Unix.chdir
 
-  let filename_exists fn = stat fn <> None
+  let file_exists fn = stat fn <> None
 
   (* pread from ExtUnixAll *)
 
@@ -182,7 +182,7 @@ module Extra = struct
   (** Return an option, Some realpath or None *)
   let find_file_cwd_to_root ~fn = 
     "." |> iter_break (fun p -> 
-        match filename_exists (p / fn) with
+        match file_exists (p / fn) with
         | true -> Break(Some (ExtUnix.Specific.realpath (p / fn)))
         | false -> 
           match is_root p with

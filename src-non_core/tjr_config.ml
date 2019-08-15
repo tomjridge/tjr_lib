@@ -11,13 +11,28 @@ module Make(S:sig
 
   (** Read config from file, or use default_config if it exists *)
   let config = 
-    try
-      Yojson.Safe.from_file filename |> config_of_yojson |> function
-      | Ok r -> r 
-      | _ -> failwith ""
-    with _ -> 
-    match default_config with
-    | None -> failwith __LOC__
-    | Some c -> c
+    Tjr_file.file_exists filename |> function
+    | false -> (
+        match default_config with
+        | None -> 
+          Printf.sprintf "No config file %s exists, and no config default defined\n%s" filename __LOC__
+          |> failwith
+        | Some c -> c)
+    | true -> (
+        try 
+          Yojson.Safe.from_file filename |> config_of_yojson |> function
+          | Ok r -> r 
+          | _ -> failwith __LOC__
+        with _ -> 
+          (match default_config with 
+           | None -> ()
+           | Some c -> (
+               c |> config_to_yojson |> Yojson.Safe.pretty_to_string |> fun c ->
+               Printf.printf "Config file %s should look like:\n%s\n" filename c));
+          Printf.sprintf "Config file %s exists, but could not be parsed\n%s" filename __LOC__
+          |> failwith
+      )
+
+          
 end
 
