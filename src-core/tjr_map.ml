@@ -26,6 +26,18 @@ type ('k,'v,'t) map_ops = {
   map: ('v -> 'v) -> 't -> 't;  (* NOTE less general than stdlib *)
 }
 
+let map_merge ~map_ops ~old ~new_ = (
+  (* let open Tjr_map in *)
+  map_ops.bindings new_ |> fun kvs ->
+  (kvs,old) |> Iter.iter_opt
+    (function
+      | ([],m) -> None
+      | ((k,v)::kvs,m) -> 
+        Some (kvs,map_ops.add k v m))
+  |> (fun ([],m) -> m)[@ocaml.warning "-8"]
+)
+
+
 (** Functor to make map ops; generates a new impl type 't *)
 module Make_map_ops(Ord: Map.OrderedType) = struct
   include Map.Make(Ord)
