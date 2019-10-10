@@ -28,6 +28,8 @@ type fstore = Tjr_store.fstore (* available after open Tjr_lib_core *)
 
 module Args_ = Args_
 
+module Singleton_type = Singleton_type
+
 (* module Init_ref = Init_ref *)
 
 (** {2 Logging and test control} *)
