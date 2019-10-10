@@ -316,6 +316,29 @@ end
 
 
 
+module With_singleton = struct
+  open Singleton_type
+
+  (* type ('k,'k_cmp,'v) map *)
+
+  type 'k_cmp map_repr
+
+  (** make_map_ops in Tjr_map leaves map repr type free; this just
+     identifies it with 'k_cmp repr, where 'k_cmp is a singleton type
+     representing the order *)
+  let make_map_ops (type k v k_cmp) ~(k_cmp: (k_cmp,k->k->int) sng) 
+    : (k,v,(k,v,k_cmp map_repr)map)map_ops 
+    = 
+    let k_cmp : k -> k -> int = dest_sng k_cmp in
+    let map_ops (* : (k,v,(k,v,k_cmp)map) map_ops *) = make_map_ops k_cmp in
+    map_ops
+    
+
+  let _ = make_map_ops
+end
+
+
+
 
 
 (*
