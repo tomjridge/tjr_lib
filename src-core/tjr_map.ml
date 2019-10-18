@@ -24,6 +24,7 @@ type ('k,'v,'t) map_ops = {
   find_last_opt: ('k -> bool) -> 't -> ('k * 'v) option;
   iter: ('k -> 'v -> unit) -> 't -> unit;
   map: ('v -> 'v) -> 't -> 't;  (* NOTE less general than stdlib *)
+  (* merge: older:'t -> newer:'t -> 't; *)
 }
 
 let map_merge ~map_ops ~old ~new_ = (
