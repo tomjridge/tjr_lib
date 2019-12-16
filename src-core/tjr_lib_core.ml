@@ -33,6 +33,9 @@ module Singleton_type = Singleton_type
 type ('a,'b) sng = ('a,'b) Singleton_type.sng
 let dest_sng = Singleton_type.dest_sng
 
+module Tjr_lru = Tjr_lru
+include Tjr_lru
+
 (* module Init_ref = Init_ref *)
 
 (** {2 Logging and test control} *)

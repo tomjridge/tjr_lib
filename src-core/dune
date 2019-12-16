@@ -3,4 +3,4 @@
   (flags (:standard -w -27-8-40-32-39))
 ;  (wrapped false)
   (preprocess (pps ppx_deriving_yojson))
-  (libraries yojson ppx_deriving_yojson ppx_deriving_yojson.runtime base core_kernel))
+  (libraries yojson ppx_deriving_yojson ppx_deriving_yojson.runtime base core_kernel lru))
