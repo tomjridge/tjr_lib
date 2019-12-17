@@ -29,7 +29,7 @@ let _ =
 
 (** {2 Bimap tests} *)
 
-module X = Bimap_test()
+module X = Bimap.Bimap_test()
 
 
 

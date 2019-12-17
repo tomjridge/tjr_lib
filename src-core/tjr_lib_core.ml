@@ -34,10 +34,10 @@ type ('a,'b) sng = ('a,'b) Singleton_type.sng
 let dest_sng = Singleton_type.dest_sng
 
 module Tjr_lru = Tjr_lru
-include Tjr_lru
+type ('k,'v,'t) lru_ops = ('k,'v,'t) Tjr_lru.lru_ops
 
 module Bimap = Bimap
-include Bimap
+type ('x,'y,'t) bimap_ops = ('x,'y,'t) Bimap.bimap_ops
 
 (* module Init_ref = Init_ref *)
 
