@@ -8,7 +8,7 @@ all::
 	dune build src-test/test_main.exe
 
 run_test:
-	dune exec src-test/test_main.exe
+	OCAMLRUNPARAM=b dune exec src-test/test_main.exe
 
 -include Makefile.ocaml
 

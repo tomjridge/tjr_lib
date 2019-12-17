@@ -26,6 +26,13 @@ let _ =
       | true -> ()
       | false -> (Printf.printf "%d\n" x; k (x+1)))
 
+
+(** {2 Bimap tests} *)
+
+module X = Bimap_test()
+
+
+
 let _ = 
   let open Args_ in
   let xx = ref "" in

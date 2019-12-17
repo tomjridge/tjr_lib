@@ -20,14 +20,14 @@ end
 
 type ('k,'v,'t) lru_ops = ('k,'v,'t) Lru_ops.lru_ops
 
-module Make(K:Stdlib.Map.OrderedType)(V:sig type t end) = struct
-
-  module V' = struct
-    include V
-    let weight _ = 1
-  end
+module Make_lru(K:Stdlib.Map.OrderedType)(V:sig type t end) = struct
 
   module Internal = struct
+    module V' = struct
+      include V
+      let weight _ = 1
+    end
+
     module Lru = Lru.F.Make(K)(V')
 
     include Lru
@@ -41,6 +41,9 @@ module Make(K:Stdlib.Map.OrderedType)(V:sig type t end) = struct
   open Internal
 
   open Lru_ops
+
+  (* to make self-contained at top level *)
+  type t = Internal.Lru.t
 
   let lru_ops = 
     let trim t = 
