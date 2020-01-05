@@ -39,6 +39,8 @@ type ('k,'v,'t) lru_ops = ('k,'v,'t) Tjr_lru.lru_ops
 module Bimap = Bimap
 type ('x,'y,'t) bimap_ops = ('x,'y,'t) Bimap.bimap_ops
 
+module Intexable = Intexable
+
 (* module Init_ref = Init_ref *)
 
 (** {2 Logging and test control} *)
