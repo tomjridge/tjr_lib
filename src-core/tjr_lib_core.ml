@@ -41,6 +41,8 @@ type ('x,'y,'t) bimap_ops = ('x,'y,'t) Bimap.bimap_ops
 
 module Intexable = Intexable
 
+module Linear = Linear
+
 (* module Init_ref = Init_ref *)
 
 (** {2 Logging and test control} *)
