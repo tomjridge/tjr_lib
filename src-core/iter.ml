@@ -36,7 +36,8 @@ let _
 = iter_k
   
 
+(* eg use:
 let _ = 
   iter_k (fun ~k n -> 
       if n = 0 then 1 else n * k (n-1))
-
+*)
