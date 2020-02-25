@@ -1,6 +1,6 @@
 (** Maps based on first class modules *)
 
-open Map
+(* open Map *)
 
 module type Intf = sig
   type k
