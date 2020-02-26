@@ -2,32 +2,34 @@
    tjr_polymap; it has a dependence on extlib, whereas this is
    dependency free *)
 
-(* FIXME add more of the stdlib operations as needed *)
+(* FIXME add more of the stdlib operations as needed; don't add extra
+   operations... prefer to write the extra operations in this file
+   (?why?) *)
 type ('k,'v,'t) map_ops = {
-  k_cmp: 'k -> 'k -> int;
-  empty: 't;
-  is_empty:'t -> bool;
-  mem:'k -> 't -> bool;
-  add:'k -> 'v -> 't -> 't;
-  remove:'k -> 't -> 't;
-  cardinal: 't -> int;
-  bindings: 't -> ('k*'v) list;
-  of_bindings: ('k*'v) list -> 't;  (* FIXE allow duplicates? *)
-  max_binding_opt: 't -> ('k*'v)option;
-  min_binding_opt: 't -> ('k*'v)option;
-  split:'k -> 't -> 't * 'v option * 't;
-  find: 'k -> 't -> 'v;
-  find_opt: 'k -> 't -> 'v option;
-  update: 'k -> ('v option -> 'v option) -> 't -> 't;
-  disjoint_union: 't -> 't -> 't;
-  find_first_opt: ('k -> bool) -> 't -> ('k * 'v) option;
-  find_last_opt: ('k -> bool) -> 't -> ('k * 'v) option;
-  iter: ('k -> 'v -> unit) -> 't -> unit;
-  map: ('v -> 'v) -> 't -> 't;  (* NOTE less general than stdlib *)
-  (* merge: older:'t -> newer:'t -> 't; *)
+  k_cmp           : 'k -> 'k -> int;
+  empty           : 't;
+  is_empty        : 't -> bool;
+  mem             : 'k -> 't -> bool;
+  add             : 'k -> 'v -> 't -> 't;
+  remove          : 'k -> 't -> 't;
+  cardinal        : 't -> int;
+  bindings        : 't -> ('k*'v) list;
+  of_bindings     : ('k*'v) list -> 't;  (* FIXE allow duplicates? *)
+  max_binding_opt : 't -> ('k*'v)option;
+  min_binding_opt : 't -> ('k*'v)option;
+  split           : 'k -> 't -> 't * 'v option * 't;
+  find            : 'k -> 't -> 'v;
+  find_opt        : 'k -> 't -> 'v option;
+  update          : 'k -> ('v option -> 'v option) -> 't -> 't;
+  disjoint_union  : 't -> 't -> 't;
+  find_first_opt  : ('k -> bool) -> 't -> ('k * 'v) option;
+  find_last_opt   : ('k -> bool) -> 't -> ('k * 'v) option;
+  iter            : ('k -> 'v -> unit) -> 't -> unit;
+  map             : ('v -> 'v) -> 't -> 't;  (* NOTE less general than stdlib *)
+  (* merge        : older:'t -> newer:'t -> 't; FIXME why don't we include this? *)  
 }
 
-let map_merge ~map_ops ~old ~new_ = (
+let map_merge ~map_ops ~old ~new_ =
   (* let open Tjr_map in *)
   map_ops.bindings new_ |> fun kvs ->
   (kvs,old) |> Iter.iter_opt
@@ -36,18 +38,32 @@ let map_merge ~map_ops ~old ~new_ = (
       | ((k,v)::kvs,m) -> 
         Some (kvs,map_ops.add k v m))
   |> (fun ([],m) -> m)[@ocaml.warning "-8"]
-)
 
+
+module type S = sig
+  type k
+  type v
+  val k_cmp: k -> k -> int
+end
+
+module type T = sig
+  type k
+  type v
+  type t
+  val map_ops: (k,v,t)map_ops
+end
 
 (** Functor to make map ops; generates a new impl type 't *)
-module Make_map_ops(Ord: Map.OrderedType) = struct
-  include Map.Make(Ord)
+module Make_map_ops(S:S) : T with type k=S.k and type v=S.v = struct
+  include S
+  module Map = Map.Make(struct type t = k let compare = S.k_cmp end)
+  open Map
+  type t = v Map.t
   let disjoint_union t1 t2 = 
     let f = fun k v1 v2 -> failwith "disjoint_union: duplicate key" in
     union f t1 t2
   let of_bindings kvs = 
     kvs |> List.to_seq |> of_seq
-  let k_cmp = Ord.compare
   let map_ops = { 
     k_cmp; empty; is_empty; mem; add; remove; cardinal;
     bindings; max_binding_opt; min_binding_opt; split; find; find_opt;
@@ -62,71 +78,73 @@ end
    this library has to provide the 't *)
 type ('k,'v,'t) map  (* phant type iso to 'v Map.Make(K,k_cmp).t *)
 
-let make_map_ops (type k v t) k_cmp : (k,v,(k,v,t) map)map_ops =
-  let module M = Make_map_ops(struct type t = k let compare=k_cmp end) in
-  let to_t (x:v M.t) : (k,v,t) map = Obj.magic x in
-  let from_t (x:(k,v,t) map) : v M.t = Obj.magic x in
-  let empty = M.empty |> to_t in
-  let is_empty x = x |> from_t |> M.is_empty in
-  let mem x s = M.mem x (from_t s) in
-  let add k v t = M.add k v (from_t t) |> to_t in
-  let remove k t = M.remove k (from_t t) |> to_t in
-  let cardinal t = M.cardinal (from_t t) in
-  let bindings t = M.bindings (from_t t) in
-  let max_binding_opt t = M.max_binding_opt (from_t t) in
-  let min_binding_opt t = M.min_binding_opt (from_t t) in
-  let split k t = M.split k (from_t t) |> fun (t1,k,t2) -> (to_t t1,k,to_t t2) in
-  let find k t = M.find k (from_t t) in
-  let find_opt k t = M.find_opt k (from_t t) in
-  let update k f t = M.update k f (from_t t) |> to_t in
-  let disjoint_union t1 t2 = M.disjoint_union (from_t t1) (from_t t2) |> to_t in
-  let of_bindings kvs = M.of_bindings kvs |> to_t in
-  let find_first_opt p t = M.find_first_opt p (from_t t) in
-  let find_last_opt p t = M.find_last_opt p (from_t t) in
-  let iter f t = M.iter f (from_t t) in
-  let map f t = M.map f (from_t t) |> to_t in
+(** NOTE the following is unsafe, because the type t is unconstrained;
+   it is up to you to make sure that this doesn't cause problems. If
+   in doubt, use the functor version *)
+let unsafe_make_map_ops (type k v t) k_cmp : (k,v,(k,v,t) map)map_ops =
+  let module M = Make_map_ops(struct type nonrec k=k type nonrec v=v let k_cmp=k_cmp end) in
+  let ops = M.map_ops in
+  let to_t (x:M.t) : (k,v,t) map = Obj.magic x in
+  let from_t (x:(k,v,t) map) : M.t = Obj.magic x in
+  let empty = ops.empty |> to_t in
+  let is_empty x = x |> from_t |> ops.is_empty in
+  let mem x s = ops.mem x (from_t s) in
+  let add k v t = ops.add k v (from_t t) |> to_t in
+  let remove k t = ops.remove k (from_t t) |> to_t in
+  let cardinal t = ops.cardinal (from_t t) in
+  let bindings t = ops.bindings (from_t t) in
+  let max_binding_opt t = ops.max_binding_opt (from_t t) in
+  let min_binding_opt t = ops.min_binding_opt (from_t t) in
+  let split k t = ops.split k (from_t t) |> fun (t1,k,t2) -> (to_t t1,k,to_t t2) in
+  let find k t = ops.find k (from_t t) in
+  let find_opt k t = ops.find_opt k (from_t t) in
+  let update k f t = ops.update k f (from_t t) |> to_t in
+  let disjoint_union t1 t2 = ops.disjoint_union (from_t t1) (from_t t2) |> to_t in
+  let of_bindings kvs = ops.of_bindings kvs |> to_t in
+  let find_first_opt p t = ops.find_first_opt p (from_t t) in
+  let find_last_opt p t = ops.find_last_opt p (from_t t) in
+  let iter f t = ops.iter f (from_t t) in
+  let map f t = ops.map f (from_t t) |> to_t in
   { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings;
     max_binding_opt; min_binding_opt; split; find; find_opt; update;
     disjoint_union; of_bindings; find_first_opt; find_last_opt; iter; map }
   
-
-let _ = make_map_ops
-
+let _ = unsafe_make_map_ops
 
 (** Make maps ops based on pervasives_compare; also provides ops bound
    at module level (rather than in a record). Bit of a hack. *)
-module With_pervasives_compare = struct
-
-  type ('k,'v) map_with_pervasives_compare
+module With_stdcmp = struct
+  type ('k,'v)stdmap
 
   (* NOTE the following uses polymorphic comparison!!! *)
-  let poly_map_ops_2 (type k v) () : (k,v,(k,v) map_with_pervasives_compare)map_ops =
+  let poly_map_ops_2 (type k v) () : (k,v,(k,v)stdmap)map_ops =
     let k_cmp = Pervasives.compare in
-    let module M = Make_map_ops(struct type t = k let compare=k_cmp end) in
-    let to_t (x:v M.t) : (k,v) map_with_pervasives_compare = Obj.magic x in
-    let from_t (x:(k,v) map_with_pervasives_compare) : v M.t = Obj.magic x in
-    let empty = M.empty |> to_t in
-    let is_empty x = x |> from_t |> M.is_empty in
-    let mem x s = M.mem x (from_t s) in
-    let add k v t = M.add k v (from_t t) |> to_t in
-    let remove k t = M.remove k (from_t t) |> to_t in
-    let cardinal t = M.cardinal (from_t t) in
-    let bindings t = M.bindings (from_t t) in
-    let max_binding_opt t = M.max_binding_opt (from_t t) in
-    let min_binding_opt t = M.min_binding_opt (from_t t) in
-    let split k t = M.split k (from_t t) |> fun (t1,k,t2) -> (to_t t1,k,to_t t2) in
-    let find k t = M.find k (from_t t) in
-    let find_opt k t = M.find_opt k (from_t t) in
-    let update k f t = M.update k f (from_t t) |> to_t in
-    let disjoint_union t1 t2 = M.disjoint_union (from_t t1) (from_t t2) |> to_t in
-    let of_bindings kvs = M.of_bindings kvs |> to_t in
-    let find_first_opt p t = M.find_first_opt p (from_t t) in
-    let find_last_opt p t = M.find_last_opt p (from_t t) in
-    let iter f t = M.iter f (from_t t) in
-    let map f t = M.map f (from_t t) |> to_t in
-    { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings;
-      max_binding_opt; min_binding_opt; split; find; find_opt; update;
-      disjoint_union; of_bindings; find_first_opt; find_last_opt; iter; map }
+  let module M = Make_map_ops(struct type nonrec k=k type nonrec v=v let k_cmp=k_cmp end) in
+  let ops = M.map_ops in
+  let to_t (x:M.t) : (k,v)stdmap = Obj.magic x in
+  let from_t (x:(k,v)stdmap) : M.t = Obj.magic x in
+  let empty = ops.empty |> to_t in
+  let is_empty x = x |> from_t |> ops.is_empty in
+  let mem x s = ops.mem x (from_t s) in
+  let add k v t = ops.add k v (from_t t) |> to_t in
+  let remove k t = ops.remove k (from_t t) |> to_t in
+  let cardinal t = ops.cardinal (from_t t) in
+  let bindings t = ops.bindings (from_t t) in
+  let max_binding_opt t = ops.max_binding_opt (from_t t) in
+  let min_binding_opt t = ops.min_binding_opt (from_t t) in
+  let split k t = ops.split k (from_t t) |> fun (t1,k,t2) -> (to_t t1,k,to_t t2) in
+  let find k t = ops.find k (from_t t) in
+  let find_opt k t = ops.find_opt k (from_t t) in
+  let update k f t = ops.update k f (from_t t) |> to_t in
+  let disjoint_union t1 t2 = ops.disjoint_union (from_t t1) (from_t t2) |> to_t in
+  let of_bindings kvs = ops.of_bindings kvs |> to_t in
+  let find_first_opt p t = ops.find_first_opt p (from_t t) in
+  let find_last_opt p t = ops.find_last_opt p (from_t t) in
+  let iter f t = ops.iter f (from_t t) in
+  let map f t = ops.map f (from_t t) |> to_t in
+  { k_cmp; empty; is_empty; mem; add; remove; cardinal; bindings;
+    max_binding_opt; min_binding_opt; split; find; find_opt; update;
+    disjoint_union; of_bindings; find_first_opt; find_last_opt; iter; map }
 
   let empty () = (poly_map_ops_2()).empty
   let is_empty x = (poly_map_ops_2()).is_empty x
@@ -149,6 +167,11 @@ module With_pervasives_compare = struct
   let map f t = (poly_map_ops_2()).map f t
 end
 
+(** With_base and With_base_as_record are used in
+   Isa_btree.Isa_export_wrapper; at the time, Base provided some
+   functionality that was missing in Stdlib. Probably this
+   functionality is now there, and we can drop the dependence on Base
+   *)
 
 module With_base = struct
 
@@ -266,7 +289,6 @@ module With_base = struct
 
 end    
 
-
 module With_base_as_record = struct
 
   module Map_ops_type = struct
@@ -316,6 +338,7 @@ module With_base_as_record = struct
 end
 
 
+(*
 
 module With_singleton = struct
   open Singleton_type
@@ -337,7 +360,7 @@ module With_singleton = struct
 
   let _ = make_map_ops
 end
-
+*)
 
 
 
