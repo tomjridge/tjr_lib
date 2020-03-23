@@ -14,8 +14,16 @@ let butlast xs = rev_butlast xs |> rev
 
 (** {2 List creation: from_to, map_range etc} *)
 
-(** tail recursive [l..h-1] *)
+(*
 let from_to l h = 
+  let rec f l sofar = 
+    if l>=h then List.rev sofar else f (l+1) (l::sofar)
+  in 
+  f l [] 
+*)
+
+(** tail recursive [l..h-1] *)
+let from_upto l h = 
   let rec f l sofar = 
     if l>=h then List.rev sofar else f (l+1) (l::sofar)
   in 
