@@ -1,4 +1,4 @@
-(** Extra list functions; see also {!Core_kernel.List} *)
+(** Extra list functions; see also {!Core_kernel.List} or even {!Base.List} *)
 
 include List
 
@@ -22,13 +22,14 @@ let from_to l h =
   f l [] 
 *)
 
-(** tail recursive [l..h-1] *)
+(** tail recursive [l..h-1] FIXME prefer Base.List.range? *)
 let from_upto l h = 
   let rec f l sofar = 
     if l>=h then List.rev sofar else f (l+1) (l::sofar)
   in 
   f l [] 
 
+(* let range = Base.List.range *)
 
 (** f l .. f (h-1) *)
 let rec map_range ~f l h = 
