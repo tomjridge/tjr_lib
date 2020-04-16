@@ -30,15 +30,17 @@ let runlvl = ref l1_module_init
 
 let set r = runlvl:=r
 
+let is_pre_main () = to_int !runlvl < to_int l6_main_init
+
+let is_running_main () = to_int !runlvl >= to_int l6_main_init
+
 let note_main_starts () = runlvl:=l6_main_init
 
 let note_post_main_init () = runlvl:=l7_post_main_init
-
-let is_running_main () = to_int !runlvl >= to_int l6_main_init
 
 let can_read_config_file () = !runlvl = l6_main_init
 
 
 (* FIXME todo: ensure that any config file that is forced, is forced
-   after main starts running; so add Runlevel.note_main_starts to
-   beginning of relevant mains *)
+   at main_init; so add Runlevel.note_main_starts to beginning of
+   relevant mains, and also note_post_main_init *)
