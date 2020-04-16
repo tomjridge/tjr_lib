@@ -1,4 +1,18 @@
-(** A simple config file functor *)
+(** A simple config file functor.
+
+By default, we use the value of the env var "TJR_CONFIGS_DIR" as the
+   location of config files. If this is not set, we use "/tmp".  *)
+
+open struct
+  let configs_dir = lazy (
+    Sys.getenv_opt "TJR_CONFIGS_DIR" |> function
+    | None -> "/tmp"
+    | Some s -> s)
+    
+  let configs_dir () = Lazy.force configs_dir  
+end
+
+let configs_dir = configs_dir
 
 (** Given a config type, and a filename, bind the value config to the
    Yojson-deserialized contents of the file. *)
@@ -10,13 +24,19 @@ module Make(S:sig
   open S
 
   (** Read config from file, or use default_config if it exists *)
-  let config = 
+  let config = lazy begin
+    let filename = configs_dir () ^ "/" ^ filename in
     Tjr_file.file_exists filename |> function
     | false -> (
+        Printf.printf 
+          "No config file %s exists\n%s" 
+          filename __LOC__;
         match default_config with
         | None -> 
-          Printf.sprintf "No config file %s exists, and no config default defined\n%s" filename __LOC__
-          |> failwith
+          failwith @@
+          Printf.sprintf 
+            "No config file %s exists, and no config default defined\n%s" 
+            filename __LOC__
         | Some c -> c)
     | true -> (
         try 
@@ -29,10 +49,12 @@ module Make(S:sig
            | Some c -> (
                c |> config_to_yojson |> Yojson.Safe.pretty_to_string |> fun c ->
                Printf.printf "Config file %s should look like:\n%s\n" filename c));
-          Printf.sprintf "Config file %s exists, but could not be parsed\n%s" filename __LOC__
-          |> failwith
+          failwith @@
+          Printf.sprintf 
+            "Config file %s exists, but could not be parsed\n%s" 
+            filename __LOC__
       )
-
-          
+      
+  end          
 end
 
