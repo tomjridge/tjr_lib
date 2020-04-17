@@ -1,7 +1,6 @@
-TMP_DOC_DIR:=/tmp/tjr_lib
-scratch:=/tmp/l/github/scratch
-
 default: all
+
+-include Makefile.ocaml
 
 all::
 	dune build --only-packages=tjr_lib_core,tjr_lib
@@ -10,7 +9,6 @@ all::
 run_test:
 	OCAMLRUNPARAM=b dune exec src-test/test_main.exe
 
--include Makefile.ocaml
 
 # for auto-completion of Makefile target
 clean::
