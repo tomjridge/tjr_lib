@@ -29,14 +29,14 @@ module Make(S:sig
     Tjr_file.file_exists filename |> function
     | false -> (
         Printf.printf 
-          "No config file %s exists\n%s" 
-          filename __LOC__;
+          "No config file %s exists (%s)\n" 
+          filename __FILE__;
         match default_config with
         | None -> 
           failwith @@
           Printf.sprintf 
-            "No config file %s exists, and no config default defined\n%s" 
-            filename __LOC__
+            "No config file %s exists, and no config default defined (%s)\n" 
+            filename __FILE__
         | Some c -> c)
     | true -> (
         try 
