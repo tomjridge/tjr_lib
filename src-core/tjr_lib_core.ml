@@ -43,6 +43,10 @@ module Intexable = Intexable
 
 module Linear = Linear
 
+module Seq_obj = Seq_obj
+
+let seq_f = Seq_obj.seq_f
+
 (* module Init_ref = Init_ref *)
 
 (** {2 Logging and test control} *)
