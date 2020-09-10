@@ -39,7 +39,7 @@ type 't monad_ops = {
   return: 'a. 'a -> ('a,'t)m
 }
 
-module Pvt(S:sig type t val monad_ops: t monad_ops end) = struct
+module Make(S:sig type t val monad_ops: t monad_ops end) = struct
   module S = S
   open S
 
@@ -128,8 +128,8 @@ module Test() = struct
   end
   open S
 
-  module P = Pvt(S)
-  open P
+  module M = Make(S)
+  open M
 
   type ('k,'v) map_l = {
     find_opt : 'k -> 'v option;
