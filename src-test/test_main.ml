@@ -75,3 +75,8 @@ let _ =
     (!xx) (!yy) (!subcmd) (!zz) (!rest |> String_.concat_strings ~sep:",")
   
 
+(** {2 Lru two gen tests} *)
+
+let _ = 
+  let module X = Lru_two_gen.Test() in
+  ()

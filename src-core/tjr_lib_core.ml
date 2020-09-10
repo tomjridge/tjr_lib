@@ -36,6 +36,8 @@ let dest_sng = Singleton_type.dest_sng
 module Tjr_lru = Tjr_lru
 type ('k,'v,'t) lru_ops = ('k,'v,'t) Tjr_lru.lru_ops
 
+module Lru_two_gen = Lru_two_gen
+
 module Bimap = Bimap
 type ('x,'y,'t) bimap_ops = ('x,'y,'t) Bimap.bimap_ops
 
