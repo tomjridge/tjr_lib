@@ -1,4 +1,4 @@
 (executable
-  (name test_main)
-  (libraries tjr_lib extunix)
+ (name test_main)
+ (libraries tjr_lib extunix)
 )

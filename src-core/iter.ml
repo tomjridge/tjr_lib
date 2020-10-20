@@ -1,4 +1,4 @@
-(** favourite iteraction operator *)
+(** Various iteration operators *)
 
 let iter_opt (f:'a -> 'a option) = 
   let rec loop x = 

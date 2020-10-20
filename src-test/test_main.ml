@@ -80,3 +80,8 @@ let _ =
 let _ = 
   let module X = Lru_two_gen.Test() in
   ()
+
+
+
+let _ = 
+  let module _ = Tjr_show.Test() in ()
