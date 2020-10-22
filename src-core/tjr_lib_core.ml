@@ -38,8 +38,10 @@ type ('k,'v,'t) lru_ops = ('k,'v,'t) Tjr_lru.lru_ops
 
 module Lru_two_gen = Lru_two_gen
 
+(* deprecated
 module Bimap = Bimap
 type ('x,'y,'t) bimap_ops = ('x,'y,'t) Bimap.bimap_ops
+*)
 
 module Intexable = Intexable
 

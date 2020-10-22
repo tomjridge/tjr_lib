@@ -1,0 +1,36 @@
+opam-version : "2.0"
+name         : "tjr_lib"
+version      : "0.0.1" # this should match the VERSION file
+synopsis     : "Small OCaml lib"
+
+# ----------------------------------------------------------------------
+# FIXME at the moment we have two ocamlfind packages and one opam
+# package
+
+# FIXME opam doesn't like comments at end of file?
+
+maintainer   : "Tom Ridge <tom.j.ridge@googlemail.com>"
+authors      : "Tom Ridge <tom.j.ridge@googlemail.com>"
+homepage     : "https://github.com/tomjridge/tjr_lib"
+bug-reports  : "https://github.com/tomjridge/tjr_lib/issues"
+dev-repo     : "git+https://github.com/tomjridge/tjr_lib.git"
+
+# ----------------------------------------------------------------------
+
+# NOTE no need to `opam install str`; no need to depend on str
+
+#   "ppx_deriving_yojson" already in tjr_lib_core
+depends: [
+  "ocamlfind"
+  "dune"
+  "bos"
+  "extlib" "extunix"
+  "fileutils"
+  "omd"
+  "tjr_lib_core"
+]
+
+# ----------------------------------------------------------------------
+
+build: ["dune" "build" "-p" name "-j" jobs]
+

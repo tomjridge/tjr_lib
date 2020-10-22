@@ -27,61 +27,16 @@ let _ =
       | false -> (Printf.printf "%d\n" x; k (x+1)))
 
 
-(** {2 Bimap tests} *)
-
-module X = Bimap.Bimap_test()
-
+(* module X = Bimap.Bimap_test() *)
 
 
 let _ = 
-  let open Args_ in
-  let xx = ref "" in
-  let yy = ref (-1) in
-  let zz = ref (-1) in
-  let subcmd = ref "" in
-  let rest = ref ["FIXME"] in
-  let cmd = 
-    make_cmd
-      ~usage:"test args parser" 
-      ~flags:[
-        string_flag ~name:"--xx" (fun s -> print_endline "xx"; xx:=s);
-        int_flag ~name:"--yy" (fun s -> print_endline "yy"; yy:=s)
-      ]
-      ~subcmds:[
-        make_subcmd 
-          ~name:"build"
-          ~set:(fun () -> subcmd:="build")
-          ~flags:(
-            let zz_ = (fun i -> print_endline "zz"; zz:=i) in
-            make_flag_set [
-              (* --zz and -z are aliases *)
-              int_flag ~name:"--zz" zz_;
-              int_flag ~name:"-z" zz_
-            ]);
-        make_subcmd
-          ~name:"clean"
-          ~set:(fun () -> subcmd:="clean")
-          ~flags:(make_flag_set [])
-      ]
-  in
-  let _ = 
-    "--xx 2 --yy 10 build -z 2 filename" 
-    |> String_.split_on_char ' '
-    |> cmd_parser cmd 
-    |> fun xs -> rest:=xs
-  in
-  Printf.printf 
-    "xx:%s yy:%d subcmd:%s zz:%d rest:%s\n"
-    (!xx) (!yy) (!subcmd) (!zz) (!rest |> String_.concat_strings ~sep:",")
-  
-
-(** {2 Lru two gen tests} *)
+  let module X = Args_.Test() in
+  ()
 
 let _ = 
   let module X = Lru_two_gen.Test() in
   ()
-
-
 
 let _ = 
   let module _ = Tjr_show.Test() in ()

@@ -7,7 +7,7 @@ facilities).
 
 ## Quick links
 
-* OCamldoc is [here](https://tomjridge.github.io/tjr_lib/)
+* OCamldoc is [here](https://tomjridge.github.io/ocamldocs/)
 
 
 ## Core vs non-core
