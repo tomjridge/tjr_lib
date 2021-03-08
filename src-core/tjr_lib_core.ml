@@ -13,6 +13,9 @@ include Iter
 
 module String_ = String_
 
+module Monad_intf = Monad_intf
+
+
 (** {2 Extras} *)
 
 module Tjr_map = Tjr_map
@@ -36,7 +39,9 @@ let dest_sng = Singleton_type.dest_sng
 module Tjr_lru = Tjr_lru
 type ('k,'v,'t) lru_ops = ('k,'v,'t) Tjr_lru.lru_ops
 
-module Lru_two_gen = Lru_two_gen
+(* module Lru_two_gen = Lru_two_gen *)
+
+module Lru_two_gen_v3 = Lru_two_gen_v3
 
 (* deprecated
 module Bimap = Bimap

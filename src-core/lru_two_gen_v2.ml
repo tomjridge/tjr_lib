@@ -1,4 +1,6 @@
-(** A two-generation LRU with batch eviction.
+(* this is all too much hassle; conclusion: we should use imperative programming, and at verification time we do the mapping to monads etc
+
+(** A two-generation LRU with batch eviction. Compared to v1, this includes extra operations insert, delete, trim...
 
 This tries to take advantage of the extremely good performance of
    hashtables.
@@ -35,77 +37,110 @@ Don't open - map type clashes
  *)
 open Monad_intf
 
-(** The internal map type, on which the impl is built *)
-type ('k,'v,'t) map = {
+(** The internal imperative map type, on which the impl is built;
+   based on Hashtbl interfaces *)
+type ('tbl,'k,'v,'t) map_i = {
+  find_opt           : 'tbl -> 'k -> ('v option,'t) m;
+  insert             : 'tbl -> 'k -> 'v -> (unit,'t) m;
+  size               : 'tbl -> (int,'t) m;
+  create             : unit -> ('tbl,'t)m;
+  mem                : 'tbl -> 'k -> (bool,'t)m;
+  filter_map_inplace : 'a 'b. ('a -> 'b -> ('b option,'t)m) -> 'tbl -> (unit,'t)m;
+  bindings           : 'tbl -> (('k*'v)list,'t)m
+}
+
+(** The unknown implementation for the lower map *)
+type ('k,'v,'t) map_l = {
   find_opt : 'k -> ('v option,'t) m;
   insert   : 'k -> 'v -> (unit,'t) m;
-  size     : unit -> (int,'t) m;
 }
 
-(** What we implement, a v small map *)
+(** What we implement, a v small map; needs_trim is true if the size
+   of m1 is > N; to delete, we typically insert with value None *)
 type ('k,'v,'t) map_s = {
-  find_opt : 'k -> ('v option,'t) m;
-(*  insert   : 'k -> 'v -> (unit,'t) m;
-  delete : 'k -> (unit,'t)m;
+  find_opt   : 'k -> ('v option,'t) m;
+  insert     : 'k -> 'v -> (unit,'t) m;
   needs_trim : unit -> (unit,'t)m;
-  trim : unit -> (('k*'v)list,'t)m; *)
+  trim       : unit -> (('k*'v)list,'t)m; 
+  bindings   : unit -> (('k*'v)list,'t)m;
 }
 
 
-module Make(S:sig type t val monad_ops: t monad_ops end) = struct
-  module S = S
-  open S
+(** 
+       - m1: the top cache
+       - m2: the lower cache
+       - m3: the underlying map
+*)
+let make (type t) 
+    ~(monad_ops: t monad_ops) 
+    ~(ref_cell_ops: _ ref_cell_ops)
+    ~(map_i: _ map_i)
+    ~(m3: _ map_l)
+  =
+  let open struct
+    let ( >>= ) = monad_ops.bind
+    let return = monad_ops.return
 
-  let ( >>= ) = monad_ops.bind
-  let return = monad_ops.return
+    let { mkref; deref; assign } = ref_cell_ops
 
+    let create ~max_sz = 
+      assert(max_sz >= 1);
+      map_i.create () >>= fun _m1 -> 
+      mkref _m1 >>= fun r1 -> 
+      map_i.create () >>= fun _m2 -> 
+      mkref _m2 >>= fun r2 -> 
 
+      let open struct
 
-  (** 
-     - demote_m1: called when m1 max size reached; flushes m2, and makes m1 the new m2, m1 is then empty
-     - m1: the top cache
-     - m2: the lower cache
-     - m3: the underlying map
-  *)
-  let create ~max_sz ~(demote_m1: unit -> (unit,t) m) ~(m1: _ map) ~(m2: _ map) ~(m3: _ map) = 
-    assert(max_sz >= 1);
-    let open (struct
+        let find_opt k =
+          deref r1 >>= fun tbl -> 
+          map_i.find_opt tbl k >>= function
+          | None -> (
+              map_i.find_opt tbl k >>= function
+              | None -> (
+                  (* pull from below, and promote to m1 *)
+                  m3.find_opt k >>= function
+                  | None -> return None
+                  | Some v -> 
+                    map_i.insert tbl k v >>= fun () ->
+                    return (Some v))
+              | Some v -> (
+                  (* should we delete from m2 here? or just note that
+                     the entry is masked by m1 *)
+                  map_i.insert tbl k v >>= fun () ->
+                  return (Some v)))
+          | Some v -> return (Some v)
 
-      let insert k v = 
-        m1.size () >>= fun s1 -> 
-        match s1 < max_sz with
-        | true -> (
-            (* can insert directly into m1 *)
-            m1.insert k v)
-        | false -> (
-            demote_m1 () >>= fun () -> 
-            m1.insert k v)
+        
+        (** insert without worrying about size *)
+        let insert k v = 
+          deref r1 >>= fun tbl -> 
+          map_i.insert tbl k v
 
-      let find_opt k =
-        m1.find_opt k >>= function
-        | None -> (
-            m2.find_opt k >>= function
-            | None -> (
-                (* pull from below, and promote to m1 *)
-                m3.find_opt k >>= function
-                | None -> return None
-                | Some v -> 
-                  insert k v >>= fun () ->
-                  return (Some v))
-            | Some v -> (
-                (* should we delete from m2 here? or just note that
-                   the entry is masked by m1 *)
-                m1.insert k v >>= fun () ->
-                return (Some v)))
-        | Some v -> return (Some v)
+        let needs_trim () = 
+          deref r1 >>= fun tbl -> 
+          map_i.size tbl >>= fun s -> 
+          return (s > max_sz)
 
-      (* what about size, for this datastruct? needed? *)
-                      
-      let size = m1.size
-  
-    end)
-    in
-    { find_opt }
+        let trim () = 
+          (* NOTE clearing and reusing seems faster than creating a new
+             hashtable *)
+          deref r1 >>= fun tbl1 ->
+          deref r2 >>= fun tbl2 -> 
+          (* remove bindings in m2 which are shadowed by m1 *)
+          tbl2 |> map_i.filter_map_inplace (fun k v -> 
+              map_i.mem tbl1 k >>= function
+              | true -> return None
+              | false -> return (Some v)) >>= fun () -> 
+          (* then return the remainder *)
+          map_i.bindings tbl2
+          
+          
+          
+          
+
+      end
+      in
 
 end
 
@@ -274,3 +309,4 @@ module Test() = struct
     (* https://gist.github.com/tomjridge/464ea21205e44dc920fcba52376eaaa2 *)
 
 end
+*)

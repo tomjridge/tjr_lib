@@ -29,13 +29,18 @@ let _ =
 
 (* module X = Bimap.Bimap_test() *)
 
-
+(*
 let _ = 
   let module X = Args_.Test() in
   ()
 
 let _ = 
   let module X = Lru_two_gen.Test() in
+  ()
+*)
+
+let _ = 
+  let module X = Lru_two_gen_v3.Test() in
   ()
 
 let _ = 
