@@ -194,25 +194,25 @@ let pad_to ?(trim=true) n s =
 
 
 (** Formatting of a table (a list of string list). By default, this
-   uses "|" as a separator, and examines all lines before computing
-   the pad *)
-let pp_csv' ?(sep="|") csv = 
+    uses "|" as a separator, and examines all lines before computing
+    the pad *)
+let pp_csv' csv = 
   (* the max length of each col *)
   let tbl = Hashtbl.create 100 in
   csv |> List.iter (fun row -> 
       row |> List.iteri (fun col s -> 
           Hashtbl.find_opt tbl col |> function
-            | None -> Hashtbl.replace tbl col (String.length s)
-            | Some i -> Hashtbl.replace tbl col (max (String.length s) i)));
+          | None -> Hashtbl.replace tbl col (String.length s)
+          | Some i -> Hashtbl.replace tbl col (max (String.length s) i)));
   csv |> List.map (fun row -> 
       row |> List.mapi (fun col s -> 
           Hashtbl.find tbl col |> fun n -> 
           s |> pad_to n))
 
-let pp_csv ?(sep="|") ?(frame=true) csv = 
-  csv |> pp_csv' ~sep |> fun csv -> 
+let pp_csv ?(sep=" | ") ?(frame=true) csv = 
+  csv |> pp_csv' |> fun csv -> 
   csv |> List.iter (fun row -> 
-      row |> String.concat " | " |> fun s -> 
+      row |> String.concat sep |> fun s -> 
       if frame then Printf.printf "%s %s %s\n" sep s sep
       else Printf.printf "%s\n" s)
 
