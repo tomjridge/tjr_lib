@@ -19,6 +19,7 @@
    base
    core_kernel
    lru
+   tjr_monad
 ))
 
 

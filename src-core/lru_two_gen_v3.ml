@@ -33,7 +33,7 @@ NOTE a quick google search finds that this may be similar:
 Don't open - map type clashes
 
  *)
-open Monad_intf
+open Tjr_monad
 
 
 module Map_lower = struct
@@ -271,6 +271,14 @@ let make_with_delete (type t k v)
     
 
 let _ = make_with_delete
+
+
+(** {2 Common instances} *)
+
+let factory = object
+  method make_std=(fun ~m3 ~max_sz -> make_with_delete ~monad_ops:Tjr_monad.imperative_monad_ops ~m3 ~max_sz)
+end
+      
 
 (* --------------------------------------------------------------------- *)
 

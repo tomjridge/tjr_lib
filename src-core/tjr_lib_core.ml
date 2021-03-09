@@ -13,8 +13,6 @@ include Iter
 
 module String_ = String_
 
-module Monad_intf = Monad_intf
-
 
 (** {2 Extras} *)
 

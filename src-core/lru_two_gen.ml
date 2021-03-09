@@ -33,7 +33,7 @@ NOTE a quick google search finds that this may be similar:
 Don't open - map type clashes
 
  *)
-open Monad_intf
+open Tjr_monad
 
 (** The internal map type, on which the impl is built *)
 type ('k,'v,'t) map = {

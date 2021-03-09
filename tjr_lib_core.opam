@@ -13,6 +13,7 @@ depends: [
   "base"
   "core_kernel"
   "lru"
+  "tjr_monad"
 ]
 build: [
   ["dune" "subst"] {pinned}
