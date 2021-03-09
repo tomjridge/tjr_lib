@@ -1,6 +1,6 @@
 (library
   (public_name tjr_lib_core)
-  (flags (:standard -w -27-8-40-32-39))
+  (flags (:standard -w -27-32))
 ;  (wrapped false)
   (preprocess (pps ppx_deriving_yojson ppx_sexp_message))
   (libraries str yojson ppx_deriving_yojson ppx_deriving_yojson.runtime base core_kernel lru ppx_sexp_message))

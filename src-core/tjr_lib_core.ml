@@ -41,6 +41,7 @@ type ('k,'v,'t) lru_ops = ('k,'v,'t) Tjr_lru.lru_ops
 
 (* module Lru_two_gen = Lru_two_gen *)
 
+module Lru_two_gen = Lru_two_gen_v3
 module Lru_two_gen_v3 = Lru_two_gen_v3
 
 (* deprecated

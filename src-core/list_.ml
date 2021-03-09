@@ -68,7 +68,7 @@ let rec drop n xs =
 let concat_with : ('a -> 'b -> 'a) -> 'b list -> 'a = 
   fun f xs -> 
   match xs with
-    x::xs -> List.fold_left f x xs
+    x::xs -> List.fold_left f x xs[@@warning "-8"]
 
 
 

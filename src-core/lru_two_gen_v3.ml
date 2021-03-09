@@ -153,8 +153,12 @@ let _ = make_without_delete
 
 (** {2 Version with delete} *)
 
-(** Entries in the internal maps can record that an entry has been deleted *)
-type 'v or_deleted = [ `Some of 'v | `Deleted ]
+(** Entries in the internal maps can record that an entry has been
+   deleted, or that an entry is present in the lower map m3 *)
+module Entry = struct
+  type 'v entry = [ `Some of 'v | `Deleted | `Lower of 'v ]
+end
+open Entry
 
 (** What we implement *)
 module Map_m = struct
@@ -163,9 +167,9 @@ module Map_m = struct
     insert     : 'k -> 'v -> (unit,'t) m;
     delete     : 'k -> (unit,'t)m;
     needs_trim : unit -> (bool,'t)m;
-    trim       : unit -> ( ('k* ('v or_deleted))list,'t)m; 
-    bindings   : unit -> ( ('k* ('v or_deleted))list,'t)m;
-    debug      : unit -> ( ('k,'v or_deleted)Hashtbl.t * ('k,'v or_deleted)Hashtbl.t )
+    trim       : unit -> ( ('k* ('v entry))list,'t)m; 
+    bindings   : unit -> ( ('k* ('v entry))list,'t)m;
+    debug      : unit -> ( ('k,'v entry)Hashtbl.t * ('k,'v entry)Hashtbl.t )
   }
 end
 
@@ -179,33 +183,42 @@ let make_with_delete (type t k v)
     let return = monad_ops.return
 
     let _ = assert(max_sz >= 1)
-    let tbl1 = Hashtbl.create max_sz 
-    let tbl2 = Hashtbl.create max_sz 
+    let tbl1 : (k,v entry)Hashtbl.t = Hashtbl.create max_sz 
+    let tbl2 : (k,v entry)Hashtbl.t = Hashtbl.create max_sz 
     let m1 = ref tbl1 
     let m2 = ref tbl2
 
     let find_opt k =
       Hashtbl.find_opt (!m1) k |> function
-      | None -> (
+      | None -> begin
           Hashtbl.find_opt (!m2) k |> function
           | None -> (
               (* pull from below, and promote to m1 *)
               m3.find_opt k >>= function
               | None -> return None
               | Some v -> 
-                Hashtbl.replace (!m1) k (`Some v) |> fun () ->
+                Hashtbl.replace (!m1) k (`Lower v) |> fun () ->
                 return (Some v))
           | Some `Deleted -> 
             (* deleted in m2; promote to m1 and return *)
             Hashtbl.replace (!m1) k `Deleted |> fun () -> 
             return None
-          | Some (`Some v) -> (
-              (* should we delete from m2 here? or just note that
-                 the entry is masked by m1 *)
-              Hashtbl.replace (!m1) k (`Some v) |> fun () ->
-              return (Some v)))
+          | Some (`Lower v) -> 
+            (* should we delete from m2 here? or just note that
+               the entry is masked by m1 *)
+            Hashtbl.replace (!m1) k (`Lower v) |> fun () ->
+            return (Some v)
+          | Some (`Some v) -> 
+            (* should we delete from m2 here? or just note that
+               the entry is masked by m1 *)
+            Hashtbl.replace (!m1) k (`Some v) |> fun () ->
+            return (Some v)
+        end
       | Some `Deleted -> return None
+      | Some (`Lower v) -> return (Some v)
       | Some (`Some v) -> return (Some v)
+
+    let _ = find_opt
 
     (** insert without worrying about size *)
     let insert k v = 
@@ -219,7 +232,7 @@ let make_with_delete (type t k v)
       Hashtbl.length (!m1) |> fun s ->
       return (s > max_sz)
 
-    let trim () : ((k * v or_deleted) list,t)m = begin
+    let trim () : ((k * v entry) list,t)m = begin
       (* NOTE clearing and reusing seems faster than creating a new
          hashtable *)
       let tbl1 = !m1 in
@@ -236,7 +249,8 @@ let make_with_delete (type t k v)
       (* swap references *)
       m2 := tbl1;
       m1 := tbl2;          
-      (* then return the bindings from earlier, which are now flushed *)
+      (* then return the bindings from earlier, which should now be
+         flushed to m3 by the calling code *)
       return xs
     end
 
@@ -261,8 +275,6 @@ let _ = make_with_delete
 (* --------------------------------------------------------------------- *)
 
 module Test() = struct
-
-  let _ = Printf.printf "%s: test without delete\n" __FILE__
 
   module S = struct
     type t
@@ -328,6 +340,7 @@ module Test() = struct
       | Some x -> x
 
     let _ = 
+      Printf.printf "%s: test without delete\n" __FILE__;
       debug ();
       Printf.printf "find_opt 1: %d\n" (run (find_opt 1) |> dest_Some);
       debug ();
@@ -348,6 +361,8 @@ module Test() = struct
       debug ();
       Printf.printf "find_opt 9: %d\n" (run (find_opt 9) |> dest_Some);
       debug ();
+      Printf.printf "insert 1,99: %s" (run (insert 1 99); "()");
+      debug ();
       Printf.printf "trim: %s\n" (run (trim ()) |> pp_intxint_list);
       debug ();
       ()
@@ -358,9 +373,7 @@ module Test() = struct
 
   module With_delete = struct
 
-    let _ = Printf.printf "%s: test with delete\n" __FILE__
-    
-    let pp_intxint' (i,j) = Printf.sprintf "(%d,%s)" i (match j with `Deleted -> "Deleted" | `Some j -> (string_of_int j))
+    let pp_intxint' (i,j) = Printf.sprintf "(%d,%s)" i (match j with `Deleted -> "Deleted" | `Lower v -> ("Lower "^(string_of_int v)) | `Some j -> (string_of_int j))
 
     let pp_intxint'_list = pp_list pp_intxint' 
 
@@ -381,6 +394,7 @@ module Test() = struct
       | Some x -> x
 
     let _ = 
+      Printf.printf "%s: test with delete\n" __FILE__;
       debug ();
       Printf.printf "find_opt 1: %d\n" (run (find_opt 1) |> dest_Some);
       debug ();
@@ -401,8 +415,9 @@ module Test() = struct
       debug ();
       Printf.printf "find_opt 9: %d\n" (run (find_opt 9) |> dest_Some);
       debug ();
-
       Printf.printf "delete 9: %s\n" (run (delete 9); "()");
+      debug ();
+      Printf.printf "insert 1,99: %s\n" (run (insert 1 99); "()");
       debug ();
       Printf.printf "trim: %s\n" (run (trim ()) |> pp_intxint'_list);
       debug ();      
