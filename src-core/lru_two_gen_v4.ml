@@ -1,4 +1,8 @@
-(** A two-generation LRU with batch eviction. Compared to v2, this is based directly on mutable hashtables.
+(** A two-generation LRU with batch eviction. Compared to v3, this
+   assumes mutability, with explicit argument for the cache state;
+   long-running find is handled properly wrt concurrency; trimming is
+   handled by this library rather than the calling code; and Lwt is
+   assumed.
 
 This tries to take advantage of the extremely good performance of
    hashtables.
@@ -32,13 +36,19 @@ NOTE a quick google search finds that this may be similar:
 
 Don't open - record field clashes, type clashes
 
+This version assumes a mutable implementation via hashtables. For
+   concurrency, the operations trim and find may be long running. So
+   there is a higher level "0" which maintains entries that are
+   "finding" and "flushing". Attempting to access a finding key will
+   add to a queue to be informed when the operation completes (with
+   the found value, if any). A trimming key can be read, but updates
+   have to wait till the trim completes. This is very fine-grain
+   concurrency control (the assumption is that the additional
+   concurrency actually pays off).
+
  *)
 open Tjr_monad
 
-
-(** {2 Version without delete moved to OLD 2021-03-10} *)
-
-(* --------------------------------------------------------------------- *)
 
 (** {2 Version with delete} *)
 
@@ -64,7 +74,6 @@ module Entry = struct
   type 'v dirty_entry = [ `Inserted of 'v | `Deleted ]
 end
 include Entry
-
 
 
 (** Cache state; internal *)
@@ -136,6 +145,8 @@ module Api_explicit = struct
     delete     : c:'c -> 'k -> (unit, 't) m;
     needs_trim : c:'c -> (bool, 't) m;
     trim       : c:'c -> (('k * 'v entry) list, 't) m;
+    (** NOTE this returns all the trimmed entries, not just the dirties *)
+
     bindings   : c:'c -> (('k * 'v entry) list, 't) m;
     dirties    : c:'c -> (('k * 'v dirty_entry) list, 't) m;
     clean      : c:'c -> ( ('k*'v dirty_entry) list,'t)m;
@@ -145,6 +156,7 @@ end
 open Api_explicit
 
 
+(*
 (** API we implement, without explicit state; find_opt, insert, delete, trim etc *)
 module Map_m = struct
   type ('k,'v,'t) map_m = {
@@ -159,7 +171,7 @@ module Map_m = struct
     debug      : unit -> ( ('k,'v entry)Hashtbl.t * ('k,'v entry)Hashtbl.t )
   }
 end
-
+*)
 
 (** For some applications, we want very precise control of the cache,
    ie not to have the cache state hidden inside functions, but instead
@@ -169,7 +181,7 @@ module With_explicit_cache = struct
   module type S = sig
     type k
     type v
-    type t
+    type t = lwt  (** NOTE specialized to lwt *)
     val monad_ops: t monad_ops
   end
 
@@ -279,6 +291,8 @@ module With_explicit_cache = struct
 
   end
 end
+
+(* FIXME
 
 (** Version without explicit cache state *)
 let make (type t k v)
@@ -425,3 +439,4 @@ module Test() = struct
 
 
 end
+*)
