@@ -45,6 +45,8 @@ module Lru_two_gen_v3 = Lru_two_gen_v3
 (** Internal module *)
 module Lru_two_gen_v3pure = Lru_two_gen_v3pure
 
+module Lru_with_slow_operations = Lru_with_slow_operations
+
 (* deprecated
 module Bimap = Bimap
 type ('x,'y,'t) bimap_ops = ('x,'y,'t) Bimap.bimap_ops

@@ -20,6 +20,11 @@ end
 
 type ('k,'v,'t) lru_ops = ('k,'v,'t) Lru_ops.lru_ops
 
+
+(** Functional interface *)
+module F_ops = Lru_ops
+
+(** FIXME make clear this is functional LRU *)
 module Make_lru(K:Stdlib.Map.OrderedType)(V:sig type t end) = struct
 
   module Internal = struct
@@ -61,3 +66,37 @@ module Make_lru(K:Stdlib.Map.OrderedType)(V:sig type t end) = struct
 
 end
 
+(** Like Pqwy Lru, but with some small renamings, weights ignored
+   (everything has weight 1) and a parametric type for the operations. *)
+module Mutable = struct
+
+  type ('k,'v,'t) lru_ops = (module Lru.M.S with type k = 'k and type v = 'v and type t = 't)
+
+  module type K = Stdlib.Hashtbl.HashedType
+
+  module type S = sig
+    type k
+    include K with type t := k
+    type v
+  end
+
+  module type T = sig
+    type k
+    type v
+    type t
+    val lru_ops : (k,v,t) lru_ops
+  end
+
+  module Make(S:S) : T with type k = S.k and type v = S.v = struct
+    include S
+    module K = struct include S type t = k end
+    module V = struct
+      type t = v
+      let weight _ = 1 (* every entry has weight 1 *)
+    end
+    module Lru = Lru.M.Make(K)(V)
+    type t = Lru.t
+    let lru_ops : _ lru_ops = (module Lru)
+  end
+
+end
