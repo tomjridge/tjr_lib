@@ -99,4 +99,16 @@ module Mutable = struct
     let lru_ops : _ lru_ops = (module Lru)
   end
 
+  module type S' = sig
+    type k
+    type v
+  end
+
+  module Make_with_pervasives(S':S') = struct
+    include Make(struct 
+        include S' 
+        let equal (x:k) (y:k) = (x=y)
+        let hash (x:k) = Hashtbl.hash x
+      end)
+  end
 end
