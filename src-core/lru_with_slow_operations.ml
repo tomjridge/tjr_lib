@@ -34,6 +34,7 @@ end
 module Top = struct
 
   type ('k,'v,'c,'t) ops = {
+    initial_cache_state : cap:int -> trim_delta:int -> 'c;
     find_opt   : 'c -> 'k -> ('v option, 't) m;
     insert     : 'c -> 'k -> 'v -> (unit, 't) m;
     delete     : 'c -> 'k -> (unit, 't) m;
@@ -95,9 +96,24 @@ module type S = sig
   val bot_ops : (k,v,bot,t)Bot.ops
 end
 
-module Make(S:S) = struct
-  open S
+module type T = sig
+  type t = lwt
+  type k
+  type v
+  type lru
+  type cache_state'
+  val ops: (k,v,cache_state',t)Top.ops
+  val to_cache_state: cache_state' -> (k,(v,t)entry,lru,t)cache_state
+  val of_cache_state: (k,(v,t)entry,lru,t)cache_state -> cache_state'
+end
+
+(** Functor make *)
+module Make(S:S) : T with type k = S.k and type v = S.v and type lru = S.lru = struct
+  include S
   module Lru = (val lru_ops)
+  type cache_state' = (k,(v,t)entry,lru,t)cache_state
+  let to_cache_state = fun x -> x
+  let of_cache_state = fun x -> x
 
   open Tjr_monad.With_lwt
 
@@ -133,7 +149,7 @@ module Make(S:S) = struct
       *)
       (* NOTE: we can drop "finding" entries if we choose *)
       let to_trim = ref [] in
-      for i = 1 to c.trim_delta do
+      for _i = 1 to c.trim_delta do
         let x = Lru.lru c.lru in
         Lru.drop_lru c.lru;
         assert(x <> None); (* we must have elts to drop *)
@@ -248,6 +264,55 @@ module Make(S:S) = struct
     Lru.add k (Plain (delete ())) c.lru;
     maybe_trim c
 
-  let ops = Top.{ find_opt; insert; delete; sync; exec }
+  let ops = Top.{ initial_cache_state; find_opt; insert; delete; sync; exec }
   
+end
+
+(** make as a function.
+
+    NOTE: This uses Stdlib pervasive equality and hashing on values of
+   type k; this provides a simpler interface where the Lru
+   functionality is constructed for the user *)
+let make (type k v bot) ~bot_ops ~bot = 
+  let open (struct
+    type t = lwt
+
+    (* construct lru ops using Tjr_lru.Mutable *)
+    module S = struct
+      type nonrec k = k
+      let equal (k1:k) (k2:k) = (k1=k2) (* FIXME? *)
+      let hash k = Hashtbl.hash k
+      type nonrec v = (v,t)entry
+    end
+    module Lru = Tjr_lru.Mutable.Make(S)
+    type lru = Lru.t
+    let lru_ops = Lru.lru_ops
+
+    (* now call Make *)
+    module S2 = struct
+      type nonrec t = lwt
+      type nonrec k = k
+      type nonrec v = v
+      type nonrec lru = lru
+      let lru_ops = lru_ops
+
+      type nonrec bot = bot
+      let bot_ops = bot_ops
+      let bot = bot
+    end        
+
+    module M = Make(S2)
+  end)
+  in
+  (module M : T with type k = k and type v = v)
+
+let _ : 
+bot_ops:('k, 'v, 'bot, lwt) Bot.ops ->
+bot:'bot -> 
+(module T with type k = 'k and type v = 'v)
+ = make
+
+
+module Test() = struct
+  (* FIXME best way to test? *)
 end
