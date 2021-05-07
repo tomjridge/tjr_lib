@@ -23,8 +23,8 @@ type 'v op' = [
 module Bot = struct 
   type ('k,'v,'bot,'t) ops = {
     find_opt   : 'bot -> 'k -> ('v option, 't) m;
-    insert     : 'bot -> 'k -> 'v -> (unit, 't) m;
-    delete     : 'bot -> 'k -> (unit, 't) m;
+    (* insert     : 'bot -> 'k -> 'v -> (unit, 't) m; *)
+    (* delete     : 'bot -> 'k -> (unit, 't) m; *)
     sync       : 'bot -> (unit,'t) m;
     exec       : 'bot -> sync:bool -> ('k,'v)op list -> (unit,'t)m;
   }
@@ -36,18 +36,28 @@ module Bot = struct
      exec force other outstanding operations to sync, or just those in
      the list given? Or is the semantics that sync is called
      immediately afterwards, so everything is synced? Yes, this
-     semantics seems simpler. *)
+     semantics seems simpler. FIXME rename exec to exec_sync and
+     remove sync flag *)
 end
 
 
 (** Top-level operations. *)
 module Top = struct
 
-  type ('k,'v,'c,'t) ops = {
-    initial_cache_state : cap:int -> trim_delta:int -> 'c;
-    find_opt   : 'c -> 'k -> ('v option, 't) m;
-    insert     : 'c -> 'k -> 'v -> (unit, 't) m;
-    delete     : 'c -> 'k -> (unit, 't) m;
+  type ('k,'v,'c,'bot,'t) ops = {
+    initial_cache_state : 
+      cap:int -> trim_delta:int -> bot:'bot -> bot_ops:('k,'v,'bot,'t)Bot.ops -> 'c;
+    find_opt     : 'c -> 'k -> ('v option, 't) m;
+    insert       : 'c -> 'k -> 'v -> (unit, 't) m;
+    delete       : 'c -> 'k -> (unit, 't) m;
+    unsafe_clean : 'c -> ('k,'v)op list;
+    (** unsafe_clean removes all entries and returns them as a list;
+       this assumes the caller has control over concurrency (ie that
+       no-one is using the cache, and the cache is not syncing), and
+       will sync to the lower layer themselves; it is used to avoid
+       multiple syncs to the lower level when syncing eg a dir's dirty
+       entries and a dir's meta, see v3_level2.ml *)
+
     sync       : 'c -> (unit,'t) m;
     (* sync_k    'c -> 'k -> (unit,'t)m; *)
     (* sync_ks   'c -> 'k list -> (unit,'t)m; *)
@@ -76,7 +86,10 @@ let insert v = (Some v, ref true)
 let delete () = (None, ref true)
 
 
-type ('k,'v,'lru,'t) cache_state = {
+type ('k,'v,'lru,'bot,'t) cache_state = {
+  bot: 'bot;
+  bot_ops: ('k,'v,'bot,'t) Bot.ops;
+
   mutable is_syncing: bool;
 
   mutable syncing: (unit,'t)m;
@@ -103,10 +116,7 @@ module type S = sig
   type lru
   val lru_ops : (k,(v,t)entry,lru) Tjr_lru.Mutable.lru_ops
 
-
   type bot
-  val bot : bot
-  val bot_ops : (k,v,bot,t)Bot.ops
 end
 
 module type T = sig
@@ -114,17 +124,20 @@ module type T = sig
   type k
   type v
   type lru
+  type bot
   type cache_state'
-  val ops: (k,v,cache_state',t)Top.ops
-  val to_cache_state: cache_state' -> (k,(v,t)entry,lru,t)cache_state
-  val of_cache_state: (k,(v,t)entry,lru,t)cache_state -> cache_state'
+  val ops: (k,v,cache_state',bot,t)Top.ops
+  val to_cache_state: cache_state' -> (k,v,lru,bot,t)cache_state
+  val of_cache_state: (k,v,lru,bot,t)cache_state -> cache_state'
 end
 
 (** Functor make *)
-module Make(S:S) : T with type k = S.k and type v = S.v and type lru = S.lru = struct
+module Make(S:S) 
+  : T with type k = S.k and type v = S.v and type lru = S.lru and type bot = S.bot 
+= struct
   include S
   module Lru = (val lru_ops)
-  type cache_state' = (k,(v,t)entry,lru,t)cache_state
+  type cache_state' = (k,v,lru,bot,t)cache_state
   let to_cache_state = fun x -> x
   let of_cache_state = fun x -> x
 
@@ -138,11 +151,13 @@ module Make(S:S) : T with type k = S.k and type v = S.v and type lru = S.lru = s
       !clock
 
 
-  let initial_cache_state ~cap ~trim_delta = 
+  let initial_cache_state ~cap ~trim_delta ~bot ~bot_ops = 
     assert(trim_delta > 0);
     assert(cap > 0);
     assert(trim_delta <= cap);
     {
+      bot; 
+      bot_ops;
       is_syncing   = false;
       syncing      = return ();
       lru          =  Lru.create cap;
@@ -226,11 +241,31 @@ module Make(S:S) : T with type k = S.k and type v = S.v and type lru = S.lru = s
          added... possibly this is simplest *)
       (* we expect that sync should be true here - no point delaying
          writing to disk *)
-      let p = bot_ops.exec bot ~sync:true !to_trim in
+      let p = c.bot_ops.exec c.bot ~sync:true !to_trim in
       c.is_syncing <- true;
       p >>= fun () -> 
       c.is_syncing <- false;
       return ()
+
+  let unsafe_clean c =
+    assert(not c.is_syncing);
+    let dirties = ref [] in
+    c.lru |> Lru.iter (fun k v -> 
+        match v with 
+        | Finding _ -> ()
+        | Plain (v,dirty) -> 
+          match !dirty with 
+          | true -> (
+              dirty:=false;
+              let op = match v with
+                | None -> `Delete k
+                | Some v -> `Insert(k,v)
+              in
+              dirties:=op::!dirties)
+          | false -> ());
+    (* take the opportunity to trim some entries *)
+    Lru.trim c.lru;
+    !dirties
 
   let rec sync c = 
     match c.is_syncing with 
@@ -239,29 +274,14 @@ module Make(S:S) : T with type k = S.k and type v = S.v and type lru = S.lru = s
       sync c (* try again, since we may have updated entries whilst syncing *)
     | false -> 
       (* construct promise *)
-      let p = 
-        let dirties = ref [] in
-        c.lru |> Lru.iter (fun k v -> 
-            match v with 
-            | Finding _ -> ()
-            | Plain (v,dirty) -> 
-              match !dirty with 
-              | true -> (
-                dirty:=false;
-                let op = match v with
-                  | None -> `Delete k
-                  | Some v -> `Insert(k,v)
-                in
-                dirties:=op::!dirties)
-              | false -> ());
-        (* take the opportunity to trim some entries *)
-        Lru.trim c.lru;
+      let p () = 
+        let dirties = unsafe_clean c in
         (* now process dirties as a batch *)
-        bot_ops.exec bot ~sync:true (!dirties)        
+        c.bot_ops.exec c.bot ~sync:true dirties
       in
-      c.is_syncing <- true;
-      c.syncing <- p;
-      p >>= fun () ->
+      c.is_syncing <- true;      
+      c.syncing <- p ();
+      c.syncing >>= fun () ->
       c.is_syncing <- false;
       return () 
 
@@ -291,7 +311,7 @@ module Make(S:S) : T with type k = S.k and type v = S.v and type lru = S.lru = s
           (* create the promise *)
           let now = get_time () in
           let promise = 
-            bot_ops.find_opt bot k >>= fun v -> 
+            c.bot_ops.find_opt c.bot k >>= fun v -> 
             (* CAREFUL! In the meantime the cache entry may have been
                updated, either by another find on the same key (which
                should result in the same value if no intervening
@@ -331,16 +351,20 @@ module Make(S:S) : T with type k = S.k and type v = S.v and type lru = S.lru = s
     Lru.add k (Plain (delete ())) c.lru;
     maybe_trim c
 
-  let ops = Top.{ initial_cache_state; find_opt; insert; delete; sync; exec }
+  let ops = Top.{ initial_cache_state; find_opt; insert; delete; unsafe_clean; sync; exec }
+              
+  let _ : (k, v, cache_state', bot, t) Top.ops = ops
   
 end
+
+type ('k,'v,'bot) lru_module = (module T with type k = 'k and type v = 'v and type bot='bot)
 
 (** make as a function.
 
     NOTE: This uses Stdlib pervasive equality and hashing on values of
    type k; this provides a simpler interface where the Lru
    functionality is constructed for the user *)
-let make (type k v bot) ~bot_ops ~bot = 
+let make (type k v bot) () = 
   let open (struct
     type t = lwt
 
@@ -362,19 +386,16 @@ let make (type k v bot) ~bot_ops ~bot =
       let lru_ops = lru_ops
 
       type nonrec bot = bot
-      let bot_ops = bot_ops
-      let bot = bot
     end        
 
     module M = Make(S2)
   end)
   in
-  (module M : T with type k = k and type v = v)
+  (module M : T with type k = k and type v = v and type bot=bot)
 
 let _ : 
-bot_ops:('k, 'v, 'bot, lwt) Bot.ops ->
-bot:'bot -> 
-(module T with type k = 'k and type v = 'v)
+unit -> 
+('k,'v,'bot)lru_module
  = make
 
 
@@ -406,10 +427,10 @@ module Test() = struct
         return ()
       )
 
-    let bot_model : _ Bot.ops = { find_opt; insert; delete; sync; exec }
+    let bot_model : _ Bot.ops = { find_opt; (* insert; delete; *) sync; exec }
 
     (* The model of the overall system is just a map (we ignore sync for the time being) *)
-    let sys_model : _ Bot.ops = { find_opt; insert; delete; sync; exec }
+    let sys_model : _ Bot.ops = { find_opt; (* insert; delete; *) sync; exec }
     
   end
 
