@@ -71,3 +71,6 @@ module Log = Log
 module Test = Test
 
 module Tjr_show = Tjr_show
+
+module Runtime_values = Runtime_values
+include Runtime_values
