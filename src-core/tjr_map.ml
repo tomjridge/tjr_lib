@@ -32,13 +32,11 @@ type ('k,'v,'t) map_ops = {
 let map_merge ~map_ops ~old ~new_ =
   (* let open Tjr_map in *)
   map_ops.bindings new_ |> fun kvs ->
-  (kvs,old) |> Iter.iter_opt
-    (function
-      | ([],m) -> None
-      | ((k,v)::kvs,m) -> 
-        Some (kvs,map_ops.add k v m))
-  |> (fun ([],m) -> m)[@ocaml.warning "-8"]
-
+  (kvs,old) |> Util.iter_k (fun ~k:kont (kvs,merged) ->
+      match kvs with
+      | [] -> merged
+      | (k,v)::kvs -> 
+        kont (kvs,map_ops.add k v merged))
 
 module type S = sig
   type k
@@ -118,7 +116,7 @@ module With_stdcmp = struct
 
   (* NOTE the following uses polymorphic comparison!!! *)
   let poly_map_ops_2 (type k v) () : (k,v,(k,v)stdmap)map_ops =
-    let k_cmp = Pervasives.compare in
+    let k_cmp = Stdlib.compare in
   let module M = Make_map_ops(struct type nonrec k=k type nonrec v=v let k_cmp=k_cmp end) in
   let ops = M.map_ops in
   let to_t (x:M.t) : (k,v)stdmap = Obj.magic x in
