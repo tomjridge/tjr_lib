@@ -41,4 +41,4 @@ let at_exit ~print =
   print_at_exit:=print
 
 let _ = 
-  Pervasives.at_exit (fun _ -> if !print_at_exit then print_last_n () else ())
+  Stdlib.at_exit (fun _ -> if !print_at_exit then print_last_n () else ())

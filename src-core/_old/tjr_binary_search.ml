@@ -90,7 +90,7 @@ let _ = assert(
     (module struct
       let _ = Printf.printf "Assertions enabled; running tests in Tjr_binary_search\n"
 
-      let elt_ops : int elt_ops = { compare=Pervasives.compare }
+      let elt_ops : int elt_ops = { compare=Stdlib.compare }
 
       (* test on lists; obviously bin search is not efficient on lists *)
       let array_ops = {

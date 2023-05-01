@@ -33,11 +33,11 @@ end
 module Int_set = Set.Make(
 struct 
   type t = int 
-  let compare : t -> t -> int = Pervasives.compare 
+  let compare : t -> t -> int = Stdlib.compare 
 end)
 
 module String_set = Set.Make(
 struct 
   type t = string
-  let compare : t -> t -> int = Pervasives.compare 
+  let compare : t -> t -> int = Stdlib.compare 
 end)

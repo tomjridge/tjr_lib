@@ -185,7 +185,7 @@ let implode s =
 
 let pad_to ?(trim=true) n s = 
   let l = String.length s in
-  match Pervasives.compare l n with
+  match Stdlib.compare l n with
   | 0 -> s
   | x when x < 0 -> (* l < n; pad *)
     s^(String.make (n-l) ' ')

@@ -109,7 +109,7 @@ let unsafe_make_map_ops (type k v t) k_cmp : (k,v,(k,v,t) map)map_ops =
   
 let _ = unsafe_make_map_ops
 
-(** Make maps ops based on pervasives_compare; also provides ops bound
+(** Make maps ops based on Stdlib_compare; also provides ops bound
    at module level (rather than in a record). Bit of a hack. *)
 module With_stdcmp = struct
   type ('k,'v)stdmap

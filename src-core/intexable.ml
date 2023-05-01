@@ -60,7 +60,7 @@ module Map_make(S:sig type a end)
       type k = a intexable 
       type k' = int 
       let project : k -> k' = fst
-      let compare: k' -> k' -> int = Pervasives.compare
+      let compare: k' -> k' -> int = Stdlib.compare
     end
 
     module M = Map_with_projection_from_key.Make(S)

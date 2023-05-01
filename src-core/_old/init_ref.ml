@@ -38,7 +38,7 @@ end = struct
 end
 include Internal
 
-(** NOTE because this syntax overrides pervasives, be careful when
+(** NOTE because this syntax overrides Stdlib, be careful when
    opening this module *)
 let (!) = Internal.get
 

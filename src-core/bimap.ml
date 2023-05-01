@@ -136,7 +136,7 @@ module Bimap_test() = struct
 
   module Int_ = struct
     type t = int
-    let compare: t -> t -> int = Pervasives.compare
+    let compare: t -> t -> int = Stdlib.compare
   end
 
   module B = Make_bimap(Int_)(Int_)

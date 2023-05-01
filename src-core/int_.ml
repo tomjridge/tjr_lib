@@ -11,4 +11,4 @@ module Make_type_isomorphic_to_int() : TYPE_ISOMORPHIC_TO_INT = struct
   let t2int i = i
 end
 
-let compare: int -> int -> int = Pervasives.compare
+let compare: int -> int -> int = Stdlib.compare

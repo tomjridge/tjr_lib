@@ -93,8 +93,8 @@ module Common_flags = struct
     name;
     parse=(function
         | [] -> 
-          Printf.sprintf "%s option failed to parse (empty list)\n" name
-          |> failwith __LOC__
+          ignore(Printf.sprintf "%s option failed to parse (empty list)\n" name);
+          failwith __LOC__
         | x::xs -> (f x; xs));
     extra=()
   }
@@ -103,8 +103,8 @@ module Common_flags = struct
     name;
     parse=(function
         | [] -> 
-          Printf.sprintf "%s option failed to parse (empty list)\n" name
-          |> failwith __LOC__
+          ignore(Printf.sprintf "%s option failed to parse (empty list)\n" name);
+          failwith __LOC__
         | "true"::xs -> (f true; xs)
         | "false"::xs -> (f false; xs)
         | x::_ -> 

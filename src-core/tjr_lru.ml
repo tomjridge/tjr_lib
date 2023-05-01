@@ -104,7 +104,7 @@ module Mutable = struct
     type v
   end
 
-  module Make_with_pervasives(S':S') = struct
+  module Make_with_Stdlib(S':S') = struct
     include Make(struct 
         include S' 
         let equal (x:k) (y:k) = (x=y)
