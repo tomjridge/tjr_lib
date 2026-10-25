@@ -218,7 +218,7 @@ module With_base = struct
       type k = 'k and type t = 't and type v = 'v)
 
 
-  let make_map_ops (type k v cmp) (cmp:(k,cmp)comparator) : (k,v,(k,v,cmp)Base.Map.t)map_ops = 
+  let make_map_ops (type k v cmp) (cmp:(k,cmp)Base.Comparator.Module.t) : (k,v,(k,v,cmp)Base.Map.t)map_ops = 
     let module A = struct
 
       type nonrec k = k
@@ -321,7 +321,7 @@ module With_base_as_record = struct
 
   open With_base 
 
-  let make_map_ops (type k v cmp) (cmp:(k,cmp)Base.Map.comparator) = 
+  let make_map_ops (type k v cmp) (cmp:(k,cmp)Base.Comparator.Module.t) = 
     let m : (module Map2 with type k=k and type v=v and type t = (k, v, cmp) Base.Map.t) = With_base.make_map_ops cmp in
     let (module M) = m in
     let open M in

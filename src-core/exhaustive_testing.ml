@@ -32,7 +32,7 @@ module Internal(T:sig
     type t = T.t 
     open Base
     let compare=cmp 
-    let sexp_of_t t = Sexp.Atom Caml.__FILE__ 
+    let sexp_of_t t = Sexp.Atom Stdlib.__FILE__ 
   end
   module C = Base.Comparator.Make(C_arg)
 
